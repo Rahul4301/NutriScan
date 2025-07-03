@@ -18,10 +18,10 @@ const GenerateNutritionalDataInputSchema = z.object({
 export type GenerateNutritionalDataInput = z.infer<typeof GenerateNutritionalDataInputSchema>;
 
 const GenerateNutritionalDataOutputSchema = z.object({
-  calories: z.string().describe('The number of calories in the food item.'),
-  carbs: z.string().describe('The number of carbohydrates in the food item.'),
-  protein: z.string().describe('The amount of protein in the food item.'),
-  fat: z.string().describe('The amount of fat in the food item.'),
+  calories: z.string().describe('The number of calories in the food item. Try to estimate the calories based on the ingredients and food item.'),
+  carbs: z.string().describe('The number of carbohydrates in the food item. Try to estimate the carbs based on the ingredients and food item.'),
+  protein: z.string().describe('The amount of protein in the food item. Try to estimate the protein based on the ingredients and food item.'),
+  fat: z.string().describe('The amount of fat in the food item. Try to estimate the fat based on the ingredients and food item.'),
   saturatedFat: z.string().optional().describe('The amount of saturated fat in the food item, if available.'),
   transFat: z.string().optional().describe('The amount of trans fat in the food item, if available.'),
   cholesterol: z.string().optional().describe('The amount of cholesterol in the food item, if available.'),
