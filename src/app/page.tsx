@@ -4,7 +4,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-green-100 to-blue-100 p-4">
       <div className="bg-white rounded-lg shadow-lg p-8 max-w-xl w-full text-center">
-        <h1 className="text-4xl font-bold mb-4 text-green-700">Welcome to NutrsknfdncnsdlnclsiScan</h1>
+        <h1 className="text-4xl font-bold mb-4 text-green-700">Welcome to NutriScan</h1>
         <p className="text-lg mb-6 text-gray-700">
           NutriScan helps you analyze menu items for nutritional information using AI. Instantly get:
         </p>
