@@ -1,9 +1,11 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://deno.land/x/supabase@1.7.1/mod.ts'
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 import { GoogleGenerativeAI } from 'npm:@google/generative-ai'
+
 // Official Deno-compatible Supabase client import URL:
 
 const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') || '')
+
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,7 +14,7 @@ serve(async (req) => {
 
   try {
     const { menuText } = await req.json()
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
     const prompt = `
       Analyze the following menu item and provide nutritional information:
