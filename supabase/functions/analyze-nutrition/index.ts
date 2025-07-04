@@ -26,6 +26,8 @@ serve(async (req) => {
       3. Key ingredients
       4. Any potential allergens
       5. Dietary categories (vegetarian, vegan, gluten-free, etc.)
+
+      do not include any disclaimers or additional information, just the analysis ( display it as x kcal, x g protein, x g carbs, x g fats).
     `
 
     const result = await model.generateContent(prompt)
