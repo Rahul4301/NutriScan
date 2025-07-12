@@ -266,7 +266,9 @@ export function NutriScanPage() {
                     </SheetDescription>
                   </SheetHeader>
                   <Separator className="my-4" />
-                  <div className="py-4">
+ <ScrollArea className="h-[calc(100vh-10rem)] pr-4"> {/* Added ScrollArea */}
+                  <div className="pb-4"> {/* Adjusted padding */}
+
                     {nutritionStatus === 'loading' && <NutritionSkeleton />}
                     {nutritionStatus === 'loaded' && nutritionData && (
                       <NutritionInfo data={nutritionData} />
@@ -277,6 +279,7 @@ export function NutriScanPage() {
                       </p>
                     )}
                   </div>
+ </ScrollArea> {/* Closed ScrollArea */}
                 </SheetContent>
               </Sheet>
             </div>
