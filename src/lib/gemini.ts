@@ -22,6 +22,7 @@ export async function analyzeNutrition(menuText: string) {
       5. Dietary categories (vegetarian, vegan, gluten-free, etc.)
     `;
 
+    
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return response.text();
