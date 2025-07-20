@@ -2,7 +2,7 @@ import subprocess
 from google import genai
 
 import os
-os.environ["GOOGLE_API_KEY"] = "AIzaSyAPUX75_J0wmJN_lbqBOGjqETglNIDrGGY"
+os.environ["GOOGLE_API_KEY"] = "api key"
 
 # Initialize Gemini client
 client = genai.Client()
