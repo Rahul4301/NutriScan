@@ -29,6 +29,8 @@ serve(async (req)=>{
       5. Dietary categories (vegetarian, vegan, gluten-free, etc.)
 
       do not include any disclaimers or additional information, just the analysis ( display it as x kcal, x g protein, x g carbs, x g fats).
+
+      BE AS ACCURATE AS POSSIBLE WHEN GIVING THE MACROS
     `;
     console.log('🧠 Sending prompt to Gemini...');
     const result = await model.generateContent(prompt);
