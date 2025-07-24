@@ -1,16 +1,19 @@
 'use client';
 
-import { useState, useRef, useCallback, type ChangeEvent } from 'react';
+import { useState, useRef, useCallback, type ChangeEvent, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
   AlertCircle,
   BarChart,
   Beef,
   Flame,
+  LogOut,
   Plus,
   Salad,
   Soup,
   UploadCloud,
+  User,
   Wheat,
 } from 'lucide-react';
 import { scanMenuForFoodOptions } from '@/ai/flows/scan-menu-for-food-options';
@@ -38,6 +41,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/lib/supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 type Status = 'idle' | 'scanning' | 'scanned' | 'error';
 type NutritionStatus = 'idle' | 'loading' | 'loaded' | 'error';
@@ -69,7 +74,17 @@ export function NutriScanPage() {
   const [nutritionData, setNutritionData] =
     useState<GenerateNutritionalDataOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, []);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -127,6 +142,11 @@ export function NutriScanPage() {
     setError(null);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
@@ -138,12 +158,24 @@ export function NutriScanPage() {
                 NutriScan
               </h1>
             </div>
-            {status !== 'idle' && (
-              <Button variant="ghost" onClick={resetState}>
-                <Plus className="h-4 w-4 -rotate-45 mr-2" />
-                Scan New Menu
-              </Button>
-            )}
+            <div className="flex items-center gap-4">
+              {user && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground hidden sm:inline">
+                    {user.email}
+                  </span>
+                  <Button variant="ghost" size="icon" onClick={handleLogout}>
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </div>
+              )}
+              {status !== 'idle' && (
+                <Button variant="ghost" onClick={resetState}>
+                  <Plus className="h-4 w-4 -rotate-45 mr-2" />
+                  Scan New Menu
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </header>
