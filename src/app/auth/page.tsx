@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { supabase } from "@/lib/supabase";
 import { Divide } from "lucide-react";
 
 export default function AuthPage() {
@@ -17,9 +19,10 @@ export default function AuthPage() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [authError, setAuthError] = useState("");
+  const router = useRouter();
 
   const validateEmail = (email: string) => {
-    // Updated regex for email validation
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
       setEmailError("Please enter a valid email address.");
@@ -47,36 +50,61 @@ export default function AuthPage() {
     return true;
   };
 
-  const handleGoogleSignIn = () => {
-    // Handle Google Sign In logic here
-    console.log("Sign in with Google clicked");
+  const handleGoogleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+      },
+    });
+    if (error) {
+      setAuthError(error.message);
+    }
   };
 
-  const handleGoogleSignUp = () => {
-    // Handle Google Sign Up logic here
-    console.log("Sign up with Google clicked");
-  };
-
-  const handleEmailSignIn = (e: React.FormEvent) => {
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
 
     if (isEmailValid && isPasswordValid) {
-      // Handle Email Sign In logic here
-      console.log("Email sign in clicked");
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        router.push("/app");
+      }
     }
   };
 
-  const handleEmailSignUp = (e: React.FormEvent) => {
+  const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
     const isConfirmPasswordValid = validateConfirmPassword(password, confirmPassword);
 
     if (isEmailValid && isPasswordValid && isConfirmPasswordValid) {
-      // Handle Email Sign Up logic here
-      console.log("Email sign up clicked");
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        // You might want to show a message to check their email for confirmation
+        alert("Check your email for the confirmation link!");
+        router.push("/app");
+      }
     }
   };
 
@@ -92,10 +120,16 @@ export default function AuthPage() {
           </p>
         </CardHeader>
         <CardContent>
+          {authError && (
+            <div className="mb-4 text-red-500 text-sm text-center">{authError}</div>
+          )}
           <Tabs
             defaultValue="signin"
             className="w-full"
-            onValueChange={(value) => setActiveTab(value as "signin" | "signup")}
+            onValueChange={(value) => {
+              setActiveTab(value as "signin" | "signup");
+              setAuthError("");
+            }}
           >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -230,7 +264,7 @@ export default function AuthPage() {
                 <Button
                   variant="outline"
                   className="w-full mt-6"
-                  onClick={handleGoogleSignUp}
+                  onClick={handleGoogleSignIn}
                 >
                   Sign up with Google
                 </Button>
