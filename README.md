@@ -1,107 +1,107 @@
-
-<h1 align="center">🥑 NutriScan 🥕</h1>
+# 🥑 NutriScan: Your AI-Powered Food Detective
 
 <p align="center">
-  <img src="./public/favicon.ico" width="80" alt="NutriScan Logo" />
+  <img src="https://raw.githubusercontent.com/rahulsuthar/NutriScan/main/public/favicon.ico" width="100" alt="NutriScan Logo" />
 </p>
 
 <p align="center">
-  <b>NutriScan</b> is your AI-powered food detective!<br>
-  <em>Scan menus, discover nutrition, and eat smarter — all with a sprinkle of fun! 🎉</em>
+  <strong>Scan any menu, get instant nutritional insights, and make smarter food choices.</strong>
 </p>
 
 ---
-
-## Table of Contents
-
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Tech Stack](#tech-stack)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
 
 ## ✨ Features
 
-- 🤖 Scan menus for food options using AI
-- 🥗 Instantly generate nutritional data for your favorite foods
-- 📱 Responsive, beautiful UI with reusable components
-- ⚡ Built with Next.js, TypeScript, and Tailwind CSS
-- 🧩 Modular, easy-to-extend architecture
+-   **📸 AI Menu Scanning**: Snap a photo of any menu, and NutriScan will instantly identify the food items.
+-   **🥗 Instant Nutritional Analysis**: Get detailed nutritional information for each food item, including calories, protein, carbs, and fat.
+-   **🌿 Vegan & Health Ratings**: Quickly identify vegan-friendly options with a leaf icon and see a health rating (from 1 to 10) for each item.
+-   **😂 Fun Loading Experience**: Enjoy a variety of playful and quirky loading messages while the AI analyzes your menu.
+-   **🔐 Secure Authentication**: User accounts are protected with a secure authentication flow powered by Supabase.
+-   **📱 Responsive Design**: A beautiful and intuitive UI that works seamlessly on any device, built with Next.js, TypeScript, and Tailwind CSS.
 
 ---
-
-## Getting Started
-
-
-### Prerequisites
-
-- 🟢 Node.js (v18+ recommended)
-- 📦 npm or yarn
-
-
-### Installation
-
-```bash
-git clone https://github.com/yourusername/NutriScan.git
-cd NutriScan
-npm install # or yarn install
-```
-
-
-### Running the App
-
-```bash
-npm run dev # or yarn dev
-```
-
-🚀 Open [http://localhost:3000](http://localhost:3000) and start scanning your way to better nutrition!
-
----
-
-
-## 🗂️ Project Structure
-
-```text
-src/
-  ai/         # 🤖 AI flows and logic
-  app/        # 🏠 Next.js app directory
-  components/ # 🧩 UI and feature components
-  hooks/      # 🪝 Custom React hooks
-  lib/        # 🛠️ Utility functions
-public/       # 🖼️ Static assets
-docs/         # 📚 Documentation
-```
-
----
-
 
 ## 🛠️ Tech Stack
 
-- ⚡ [Next.js](https://nextjs.org/)
-- 🦄 [TypeScript](https://www.typescriptlang.org/)
-- 🎨 [Tailwind CSS](https://tailwindcss.com/)
-- 🤖 [Genkit](https://github.com/google/genkit)
+-   **Framework**: [Next.js](https://nextjs.org/)
+-   **Language**: [TypeScript](https://www.typescriptlang.org/)
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+-   **AI**: [Google's Genkit](https://github.com/google/genkit)
+-   **Backend & Auth**: [Supabase](https://supabase.io/)
+-   **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
+-   **Runtime for Supabase Functions**: [Deno](https://deno.land/)
 
 ---
 
+## 🚀 Getting Started
 
-## 🤝 Contributing
+### Prerequisites
 
-We 💚 contributions! Found a bug, have an idea, or want to add a new feature? Open an issue or submit a pull request — let’s make NutriScan even tastier together!
+-   [Node.js](https://nodejs.org/en/) (v18+ recommended)
+-   [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+-   [Docker](https://www.docker.com/get-started) (for running Supabase locally)
+
+### Installation & Setup
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/NutriScan.git
+    cd NutriScan
+    ```
+
+2.  **Install the dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Set up Supabase:**
+    -   Start the Supabase local development environment:
+        ```bash
+        npx supabase start
+        ```
+    -   The first time you run this, it will download the necessary Docker images.
+    -   Once it's running, you'll see your local Supabase credentials in the terminal.
+
+4.  **Run the application:**
+    ```bash
+    npm run dev
+    ```
+
+🎉 Your app should now be running at [http://localhost:9002](http://localhost:9002).
 
 ---
 
+## 🗂️ Project Structure
+
+```
+/
+├── src/
+│   ├── ai/
+│   │   └── flows/          # Genkit AI flows
+│   ├── app/                # Next.js app directory (pages, routes, etc.)
+│   ├── components/         # Reusable UI components
+│   ├── hooks/              # Custom React hooks
+│   └── lib/                # Utility functions and libraries
+├── supabase/
+│   ├── functions/          # Deno-based edge functions
+│   └── migrations/         # Database migrations
+└── README.md               # You are here!
+```
+
+---
+
+## 🤖 AI Flows
+
+NutriScan uses two primary AI flows, powered by Google's Genkit:
+
+1.  **`scan-menu-for-food-options`**: This flow takes a menu image as input and returns a list of all the food items it can identify.
+
+2.  **`generate-nutritional-data`**: This flow takes a food item's name and returns a detailed nutritional analysis, including a health rating and whether the item is vegan.
+
+The prompts for these flows have been carefully refined to be concise and to minimize the chances of inaccurate or "hallucinated" information.
+
+---
 
 ## 📄 License
 
-MIT — see the [LICENSE](./LICENSE) for details.
-
----
-
-<p align="center">
-  <b>Eat smart. Scan happy. 🥦</b>
-</p>
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
