@@ -8,6 +8,7 @@ import {
   BarChart,
   Beef,
   Flame,
+  Leaf,
   LogOut,
   Plus,
   Salad,
@@ -44,8 +45,12 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-type Status = 'idle' | 'scanning' | 'scanned' | 'error';
+type Status = 'idle' | 'scanning' | 'analyzing' | 'scanned' | 'error';
 type NutritionStatus = 'idle' | 'loading' | 'loaded' | 'error';
+
+type FoodDetails = GenerateNutritionalDataOutput & {
+  name: string;
+};
 
 const FatIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -70,7 +75,8 @@ export function NutriScanPage() {
     useState<NutritionStatus>('idle');
   const [menuImage, setMenuImage] = useState<string | null>(null);
   const [foodOptions, setFoodOptions] = useState<string[]>([]);
-  const [selectedFood, setSelectedFood] = useState<string | null>(null);
+  const [foodDetails, setFoodDetails] = useState<FoodDetails[]>([]);
+  const [selectedFood, setSelectedFood] = useState<FoodDetails | null>(null);
   const [nutritionData, setNutritionData] =
     useState<GenerateNutritionalDataOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +111,15 @@ export function NutriScanPage() {
     try {
       const result = await scanMenuForFoodOptions({ menuPhotoDataUri: dataUri });
       setFoodOptions(result.foodOptions);
+      setStatus('analyzing');
+      
+      const details = await Promise.all(
+        result.foodOptions.map(async (foodItem) => {
+          const nutrition = await generateNutritionalData({ foodItem });
+          return { name: foodItem, ...nutrition };
+        })
+      );
+      setFoodDetails(details);
       setStatus('scanned');
     } catch (e) {
       console.error(e);
@@ -113,18 +128,18 @@ export function NutriScanPage() {
     }
   }, []);
 
-  const fetchNutrition = useCallback(async (foodItem: string) => {
+  const fetchNutrition = useCallback(async (foodItem: FoodDetails) => {
     setSelectedFood(foodItem);
     setNutritionStatus('loading');
     setNutritionData(null);
     setError(null);
     try {
-      const result = await generateNutritionalData({ foodItem });
-      setNutritionData(result);
+      // We already have the data, so just set it.
+      setNutritionData(foodItem);
       setNutritionStatus('loaded');
     } catch (e) {
       console.error(e);
-      setError(`Failed to get nutritional data for ${foodItem}.`);
+      setError(`Failed to get nutritional data for ${foodItem.name}.`);
       setNutritionStatus('error');
     }
   }, []);
@@ -137,6 +152,7 @@ export function NutriScanPage() {
     setStatus('idle');
     setMenuImage(null);
     setFoodOptions([]);
+    setFoodDetails([]);
     setSelectedFood(null);
     setNutritionData(null);
     setError(null);
@@ -251,33 +267,43 @@ export function NutriScanPage() {
                   <CardContent className="p-0">
                     <ScrollArea className="h-[calc(100vh-16rem)]">
                       <div className="p-4">
-                        {status === 'scanning' && (
+                        {(status === 'scanning' || status === 'analyzing') && (
                           <div className="space-y-4">
                             {Array.from({ length: 10 }).map((_, i) => (
                               <Skeleton key={i} className="h-10 w-full" />
                             ))}
                           </div>
                         )}
-                        {status === 'scanned' && foodOptions.length > 0 && (
+                        {status === 'scanned' && foodDetails.length > 0 && (
                           <ul className="space-y-2">
-                            {foodOptions.map((item, index) => (
-                              <li key={`${item}-${index}`}>
+                            {foodDetails.map((item, index) => (
+                              <li key={`${item.name}-${index}`}>
                                 <SheetTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     className="h-auto w-full justify-start px-3 py-2 text-left"
                                     onClick={() => fetchNutrition(item)}
                                   >
-                                    <Soup className="mr-3 h-5 w-5 flex-shrink-0 text-primary/80" />
-                                    <span className="flex-1">{item}</span>
-                                    <BarChart className="ml-3 h-5 w-5 text-muted-foreground" />
+                                    {item.isVegan && (
+                                      <Leaf className="mr-3 h-5 w-5 flex-shrink-0 text-green-500" />
+                                    )}
+                                    {!item.isVegan && (
+                                      <Soup className="mr-3 h-5 w-5 flex-shrink-0 text-primary/80" />
+                                    )}
+                                    <span className="flex-1">{item.name}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs text-muted-foreground">
+                                        {item.healthRating}/10
+                                      </span>
+                                      <BarChart className="ml-3 h-5 w-5 text-muted-foreground" />
+                                    </div>
                                   </Button>
                                 </SheetTrigger>
                               </li>
                             ))}
                           </ul>
                         )}
-                        {status === 'scanned' && foodOptions.length === 0 && (
+                        {status === 'scanned' && foodDetails.length === 0 && (
                           <p className="py-10 text-center text-muted-foreground">
                             No food items could be detected. Please try a
                             clearer image.
@@ -290,7 +316,7 @@ export function NutriScanPage() {
                 <SheetContent className="w-full sm:max-w-md">
                   <SheetHeader>
                     <SheetTitle className="font-headline text-2xl">
-                      {selectedFood}
+                      {selectedFood?.name}
                     </SheetTitle>
                     <SheetDescription>
                       Estimated nutritional information. Varies based on
@@ -298,20 +324,19 @@ export function NutriScanPage() {
                     </SheetDescription>
                   </SheetHeader>
                   <Separator className="my-4" />
- <ScrollArea className="h-[calc(100vh-10rem)] pr-4"> {/* Added ScrollArea */}
-                  <div className="pb-4"> {/* Adjusted padding */}
-
-                    {nutritionStatus === 'loading' && <NutritionSkeleton />}
-                    {nutritionStatus === 'loaded' && nutritionData && (
-                      <NutritionInfo data={nutritionData} />
-                    )}
-                    {nutritionStatus === 'error' && (
-                      <p className="text-destructive">
-                        Could not load nutritional data.
-                      </p>
-                    )}
-                  </div>
- </ScrollArea> {/* Closed ScrollArea */}
+                  <ScrollArea className="h-[calc(100vh-10rem)] pr-4">
+                    <div className="pb-4">
+                      {nutritionStatus === 'loading' && <NutritionSkeleton />}
+                      {nutritionStatus === 'loaded' && nutritionData && (
+                        <NutritionInfo data={nutritionData} />
+                      )}
+                      {nutritionStatus === 'error' && (
+                        <p className="text-destructive">
+                          Could not load nutritional data.
+                        </p>
+                      )}
+                    </div>
+                  </ScrollArea>
                 </SheetContent>
               </Sheet>
             </div>
@@ -332,21 +357,29 @@ const NutritionInfo = ({
     { icon: Beef, label: 'Protein', value: data.protein },
     { icon: Wheat, label: 'Carbs', value: data.carbs },
     { icon: FatIcon, label: 'Fat', value: data.fat },
-    { label: 'Saturated Fat', value: data.saturatedFat },
-    { label: 'Trans Fat', value: data.transFat },
-    { label: 'Cholesterol', value: data.cholesterol },
-    { label: 'Sodium', value: data.sodium },
-    { label: 'Sugar', value: data.sugar },
-    { label: 'Fiber', value: data.fiber },
+    { label: 'Saturated Fat', value: 'saturatedFat' in data ? data.saturatedFat : undefined },
+    { label: 'Trans Fat', value: 'transFat' in data ? data.transFat : undefined },
+    { label: 'Cholesterol', value: 'cholesterol' in data ? data.cholesterol : undefined },
+    { label: 'Sodium', value: 'sodium' in data ? data.sodium : undefined },
+    { label: 'Sugar', value: 'sugar' in data ? data.sugar : undefined },
+    { label: 'Fiber', value: 'fiber' in data ? data.fiber : undefined },
   ].filter((item) => item.value);
 
   return (
     <div className="space-y-4">
+      {data.healthRating && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center p-4 text-center">
+            <p className="text-sm text-muted-foreground">Health Rating</p>
+            <p className="text-2xl font-bold">{data.healthRating}/10</p>
+          </CardContent>
+        </Card>
+      )}
       <div className="grid grid-cols-2 gap-4">
         {items.slice(0, 4).map((item) => (
           <Card key={item.label}>
             <CardContent className="flex flex-col items-center justify-center p-4 text-center">
-              <item.icon className="mb-2 h-6 w-6 text-accent" />
+              {item.icon && <item.icon className="mb-2 h-6 w-6 text-accent" />}
               <p className="text-sm text-muted-foreground">{item.label}</p>
               <p className="text-xl font-bold">{item.value}</p>
             </CardContent>

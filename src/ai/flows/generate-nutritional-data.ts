@@ -29,6 +29,8 @@ const GenerateNutritionalDataOutputSchema = z.object({
   sugar: z.string().optional().describe('The amount of sugar in the food item, if available.'),
   fiber: z.string().optional().describe('The amount of fiber in the food item, if available.'),
   ingredients: z.string().optional().describe('A list of the ingredients, if available.'),
+  isVegan: z.boolean().optional().describe('Whether the food item is vegan. Use the ingredients to determine this.'),
+  healthRating: z.number().optional().describe('A health rating out of 10 for the food item, based on its nutritional information.'),
 });
 export type GenerateNutritionalDataOutput = z.infer<typeof GenerateNutritionalDataOutputSchema>;
 
@@ -40,7 +42,11 @@ const prompt = ai.definePrompt({
   name: 'generateNutritionalDataPrompt',
   input: {schema: GenerateNutritionalDataInputSchema},
   output: {schema: GenerateNutritionalDataOutputSchema},
-  prompt: `You are a nutritional expert. Generate the nutritional information for the given food item, including calories, carbs, protein, fat, and other available information like saturated fat, trans fat, cholesterol, sodium, sugar and fiber.  If ingredients are provided, use them to improve the nutritional information. Provide ingredient information if it is not already available.
+  prompt: `You are a nutritional expert. Generate the nutritional information for the given food item, including calories, carbs, protein, fat, and other available information like saturated fat, trans fat, cholesterol, sodium, sugar and fiber. 
+  
+  Based on the ingredients, determine if the food item is vegan. Also, provide a health rating out of 10 for the food item, based on its nutritional information.
+
+  If ingredients are provided, use them to improve the nutritional information. Provide ingredient information if it is not already available.
 
 Food Item: {{{foodItem}}}
 Ingredients: {{{ingredients}}}
