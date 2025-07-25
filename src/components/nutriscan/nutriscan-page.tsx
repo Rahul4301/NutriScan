@@ -44,6 +44,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useToast } from '@/hooks/use-toast';
 
 type Status = 'idle' | 'scanning' | 'analyzing' | 'scanned' | 'error';
 type NutritionStatus = 'idle' | 'loading' | 'loaded' | 'error';
@@ -83,14 +84,25 @@ export function NutriScanPage() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      if (!user) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in or sign up to make an account.',
+        });
+        setTimeout(() => {
+          router.push('/auth');
+        }, 200);
+      } else {
+        setUser(user);
+      }
     };
     fetchUser();
-  }, []);
+  }, [router, toast]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
