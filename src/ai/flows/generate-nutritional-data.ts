@@ -21,16 +21,17 @@ const GenerateNutritionalDataOutputSchema = z.object({
   calories: z.string().describe('The number of calories in the food item. Try to estimate the calories based on the ingredients and food item.'),
   carbs: z.string().describe('The number of carbohydrates in the food item. Try to estimate the carbs based on the ingredients and food item.'),
   protein: z.string().describe('The amount of protein in the food item. Try to estimate the protein based on the ingredients and food item.'),
-  fat: z.string().describe('The amount of fat in the food item. Try to estimate the fat based on the ingredients and food item.'),
-  saturatedFat: z.string().optional().describe('The amount of saturated fat in the food item, if available. Be super concise and just get the number'),
-  transFat: z.string().optional().describe('The amount of trans fat in the food item, if available. Be super concise and just get the number'),
+  fat: z.string().describe('The amount of fat in the food item. Try to estimate the fat based on the ingredients and food item. Be super concise and just get the number'),
+  saturatedFat: z.string().optional().describe('The amount of saturated fat in the food item, if available. Only return the number.'),
+  transFat: z.string().optional().describe('Only get the assumed number of the amount of trans fat in the food. only return the number.'),
   cholesterol: z.string().optional().describe('The amount of cholesterol in the food item, if available. Be super concise and just get the number'),
   sodium: z.string().optional().describe('The amount of sodium in the food item, if available. Be super concise and just get the number'),
   sugar: z.string().optional().describe('The amount of sugar in the food item, if available. Be super concise and just get the number'),
   fiber: z.string().optional().describe('The amount of fiber in the food item, if available. Be super concise and just get the number'),
-  ingredients: z.string().optional().describe('A list of the ingredients, if available.'),
-  isVegan: z.boolean().optional().describe('Whether the food item is vegan. Use the ingredients to determine this.'),
-  healthRating: z.number().optional().describe('A health rating out of 10 for the food item, based on its nutritional information.'),
+  ingredients: z.string().optional().describe('A list of the ingredients, if available. Be concise and just list the ingredients. If not available, infer them based on the food item.'),
+  isVegan: z.boolean().optional().describe('Whether the food item is vegan. Assume based off of the name and what you know about the food.'),
+  healthRating: z.number().optional().describe('A health rating out of 10 for the food item, assume based on the food name. 10 is healthiest, 1 is least healthy.'),
+  allergens: z.array(z.string()).optional().describe('A list of potential allergens in the food item. Be concise and just list the possible allergens. if there are none, return none.'),
 });
 export type GenerateNutritionalDataOutput = z.infer<typeof GenerateNutritionalDataOutputSchema>;
 
@@ -49,6 +50,7 @@ Your task is to provide the following information:
 2.  **Vegan Status**: Determine if the food is vegan.
 3.  **Health Rating**: Provide a health rating from 1 to 10, where 10 is healthiest.
 4.  **Ingredients**: If the ingredients are not provided, infer them.
+5.  **Allergens**: Identify potential allergens from the ingredients.
 
 DO NOT HALLUCINATE. Be concise with your responses and only include the information requested.
 

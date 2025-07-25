@@ -94,7 +94,7 @@ export function NutriScanPage() {
     useState<NutritionStatus>('idle');
   const [menuImage, setMenuImage] = useState<string | null>(null);
   const [foodOptions, setFoodOptions] = useState<string[]>([]);
-  const [foodDetails, setFoodDetails] = useState<FoodDetails[]>([]);
+  const [foodDetails, setFoodDetails] = useState<Map<string, FoodDetails>>(new Map());
   const [selectedFood, setSelectedFood] = useState<FoodDetails | null>(null);
   const [nutritionData, setNutritionData] =
     useState<GenerateNutritionalDataOutput | null>(null);
@@ -125,7 +125,7 @@ export function NutriScanPage() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (status === 'analyzing') {
+    if (status === 'scanning') {
       interval = setInterval(() => {
         setLoadingMessage(
           loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
@@ -154,15 +154,6 @@ export function NutriScanPage() {
     try {
       const result = await scanMenuForFoodOptions({ menuPhotoDataUri: dataUri });
       setFoodOptions(result.foodOptions);
-      setStatus('analyzing');
-      
-      const details = await Promise.all(
-        result.foodOptions.map(async (foodItem) => {
-          const nutrition = await generateNutritionalData({ foodItem });
-          return { name: foodItem, ...nutrition };
-        })
-      );
-      setFoodDetails(details);
       setStatus('scanned');
     } catch (e) {
       console.error(e);
@@ -171,21 +162,32 @@ export function NutriScanPage() {
     }
   }, []);
 
-  const fetchNutrition = useCallback(async (foodItem: FoodDetails) => {
-    setSelectedFood(foodItem);
+  const fetchNutrition = useCallback(async (foodItem: string) => {
+    setSelectedFood({ name: foodItem });
     setNutritionStatus('loading');
     setNutritionData(null);
     setError(null);
+
+    if (foodDetails.has(foodItem)) {
+      setNutritionData(foodDetails.get(foodItem)!);
+      setSelectedFood(foodDetails.get(foodItem)!);
+      setNutritionStatus('loaded');
+      return;
+    }
+
     try {
-      // We already have the data, so just set it.
-      setNutritionData(foodItem);
+      const nutrition = await generateNutritionalData({ foodItem });
+      const details = { name: foodItem, ...nutrition };
+      setFoodDetails(prev => new Map(prev).set(foodItem, details));
+      setNutritionData(details);
+      setSelectedFood(details);
       setNutritionStatus('loaded');
     } catch (e) {
       console.error(e);
-      setError(`Failed to get nutritional data for ${foodItem.name}.`);
+      setError(`Failed to get nutritional data for ${foodItem}.`);
       setNutritionStatus('error');
     }
-  }, []);
+  }, [foodDetails]);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -195,7 +197,7 @@ export function NutriScanPage() {
     setStatus('idle');
     setMenuImage(null);
     setFoodOptions([]);
-    setFoodDetails([]);
+    setFoodDetails(new Map());
     setSelectedFood(null);
     setNutritionData(null);
     setError(null);
@@ -320,36 +322,26 @@ export function NutriScanPage() {
                             ))}
                           </div>
                         )}
-                        {status === 'scanned' && foodDetails.length > 0 && (
+                        {status === 'scanned' && foodOptions.length > 0 && (
                           <ul className="space-y-2">
-                            {foodDetails.map((item, index) => (
-                              <li key={`${item.name}-${index}`}>
+                            {foodOptions.map((item, index) => (
+                              <li key={`${item}-${index}`}>
                                 <SheetTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     className="h-auto w-full justify-start px-3 py-2 text-left"
                                     onClick={() => fetchNutrition(item)}
                                   >
-                                    {item.isVegan && (
-                                      <Leaf className="mr-3 h-5 w-5 flex-shrink-0 text-green-500" />
-                                    )}
-                                    {!item.isVegan && (
-                                      <Soup className="mr-3 h-5 w-5 flex-shrink-0 text-primary/80" />
-                                    )}
-                                    <span className="flex-1">{item.name}</span>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs text-muted-foreground">
-                                        {item.healthRating}/10
-                                      </span>
-                                      <BarChart className="ml-3 h-5 w-5 text-muted-foreground" />
-                                    </div>
+                                    <Soup className="mr-3 h-5 w-5 flex-shrink-0 text-primary/80" />
+                                    <span className="flex-1">{item}</span>
+                                    <BarChart className="ml-3 h-5 w-5 text-muted-foreground" />
                                   </Button>
                                 </SheetTrigger>
                               </li>
                             ))}
                           </ul>
                         )}
-                        {status === 'scanned' && foodDetails.length === 0 && (
+                        {status === 'scanned' && foodOptions.length === 0 && (
                           <p className="py-10 text-center text-muted-foreground">
                             No food items could be detected. Please try a
                             clearer image.
@@ -451,6 +443,17 @@ const NutritionInfo = ({
             <h4 className="mb-2 font-semibold">Ingredients</h4>
             <p className="text-sm text-muted-foreground">
               {data.ingredients}
+            </p>
+          </div>
+        </>
+      )}
+      {data.allergens && (
+        <>
+          <Separator />
+          <div>
+            <h4 className="mb-2 font-semibold">Potential Allergens</h4>
+            <p className="text-sm text-muted-foreground">
+              {Array.isArray(data.allergens) ? data.allergens.join(', ') : data.allergens}
             </p>
           </div>
         </>
