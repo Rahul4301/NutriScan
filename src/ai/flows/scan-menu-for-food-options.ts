@@ -36,10 +36,14 @@ const prompt = ai.definePrompt({
   name: 'scanMenuForFoodOptionsPrompt',
   input: {schema: ScanMenuForFoodOptionsInputSchema},
   output: {schema: ScanMenuForFoodOptionsOutputSchema},
-  prompt: `You are an AI assistant that identifies food items listed in a restaurant menu image.
+  prompt: `You are an AI assistant that extracts food items from a restaurant menu image.
 
-  Analyze the menu photo and extract all discernible food options. Return a list of strings, where each string is a food option.
-  Menu Photo: {{media url=menuPhotoDataUri}}`,
+Analyze the provided menu photo and extract only the names of the food items. 
+- Do not include section headers, descriptions, or prices.
+- Only return items that are clearly food or drink.
+- If you cannot identify any food items, return an empty list.
+
+Menu Photo: {{media url=menuPhotoDataUri}}`,
 });
 
 const scanMenuForFoodOptionsFlow = ai.defineFlow(

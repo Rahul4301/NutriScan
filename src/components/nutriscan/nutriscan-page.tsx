@@ -70,6 +70,24 @@ const FatIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
   );
 
+const loadingMessages = [
+  'Analyzing the tastiness...',
+  'Counting carbs and dreams...',
+  'Calculating protein power...',
+  'Scanning for sneaky sugars...',
+  'Decoding deliciousness levels...',
+  'Reading between the menu lines...',
+  'Translating chef speak to macro speak...',
+  'Deciphering dietary data...',
+  'Crunching nutritional numbers...',
+  'Balancing macro molecules...',
+  'Teaching AI to taste test...',
+  'Consulting the macro gods...',
+  'Awakening the nutrition ninjas...',
+  'Unleashing the carb detectives...',
+  'Loading lunch logic circuits...',
+];
+
 export function NutriScanPage() {
   const [status, setStatus] = useState<Status>('idle');
   const [nutritionStatus, setNutritionStatus] =
@@ -82,6 +100,7 @@ export function NutriScanPage() {
     useState<GenerateNutritionalDataOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { toast } = useToast();
@@ -103,6 +122,18 @@ export function NutriScanPage() {
     };
     fetchUser();
   }, [router, toast]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (status === 'analyzing') {
+      interval = setInterval(() => {
+        setLoadingMessage(
+          loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
+        );
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [status]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -281,6 +312,9 @@ export function NutriScanPage() {
                       <div className="p-4">
                         {(status === 'scanning' || status === 'analyzing') && (
                           <div className="space-y-4">
+                            <p className="text-center text-muted-foreground">
+                              {loadingMessage}
+                            </p>
                             {Array.from({ length: 10 }).map((_, i) => (
                               <Skeleton key={i} className="h-10 w-full" />
                             ))}

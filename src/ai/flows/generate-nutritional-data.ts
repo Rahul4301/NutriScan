@@ -22,7 +22,7 @@ const GenerateNutritionalDataOutputSchema = z.object({
   carbs: z.string().describe('The number of carbohydrates in the food item. Try to estimate the carbs based on the ingredients and food item.'),
   protein: z.string().describe('The amount of protein in the food item. Try to estimate the protein based on the ingredients and food item.'),
   fat: z.string().describe('The amount of fat in the food item. Try to estimate the fat based on the ingredients and food item.'),
-  saturatedFat: z.string().optional().describe('The amount of saturated fat in the food item, if available.'),
+  saturatedFat: z.string().optional().describe('The amount of saturated fat in the food item, if available. Be super concise and just get the number'),
   transFat: z.string().optional().describe('The amount of trans fat in the food item, if available.'),
   cholesterol: z.string().optional().describe('The amount of cholesterol in the food item, if available.'),
   sodium: z.string().optional().describe('The amount of sodium in the food item, if available.'),
@@ -42,11 +42,16 @@ const prompt = ai.definePrompt({
   name: 'generateNutritionalDataPrompt',
   input: {schema: GenerateNutritionalDataInputSchema},
   output: {schema: GenerateNutritionalDataOutputSchema},
-  prompt: `You are a nutritional expert. Generate the nutritional information for the given food item, including calories, carbs, protein, fat, and other available information like saturated fat, trans fat, cholesterol, sodium, sugar and fiber. 
-  
-  Based on the ingredients, determine if the food item is vegan. Also, provide a health rating out of 10 for the food item, based on its nutritional information.
+  prompt: `You are a nutritional expert. Analyze the provided food item.
 
-  If ingredients are provided, use them to improve the nutritional information. Provide ingredient information if it is not already available.
+Your task is to provide the following information:
+1.  **Nutritional Data**: Generate the nutritional information (calories, carbs, protein, fat, etc.).
+2.  **Vegan Status**: Determine if the food is vegan.
+3.  **Health Rating**: Provide a health rating from 1 to 10, where 10 is healthiest.
+4.  **Ingredients**: If the ingredients are not provided, infer them.
+
+DO NOT HALLUCINATE. Be concise with your responses and only include the information requested.
+
 
 Food Item: {{{foodItem}}}
 Ingredients: {{{ingredients}}}
