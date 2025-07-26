@@ -157,7 +157,11 @@ export function NutriScanPage() {
       setStatus('scanned');
     } catch (e) {
       console.error(e);
-      setError('Failed to scan menu. Please try another image.');
+      if (e instanceof Error && e.message.includes('[429 Too Many Requests]')) {
+        setError('Too many API requests made. Tell the owner to fix it.');
+      } else {
+        setError('Failed to scan menu. Please try another image.');
+      }
       setStatus('error');
     }
   }, []);
@@ -184,7 +188,11 @@ export function NutriScanPage() {
       setNutritionStatus('loaded');
     } catch (e) {
       console.error(e);
-      setError(`Failed to get nutritional data for ${foodItem}.`);
+      if (e instanceof Error && e.message.includes('[429 Too Many Requests]')) {
+        setError('Too many API requests made. Tell the owner to fix it.');
+      } else {
+        setError(`Failed to get nutritional data for ${foodItem}.`);
+      }
       setNutritionStatus('error');
     }
   }, [foodDetails]);

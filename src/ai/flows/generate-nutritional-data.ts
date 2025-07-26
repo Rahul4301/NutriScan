@@ -23,7 +23,7 @@ const GenerateNutritionalDataOutputSchema = z.object({
   protein: z.string().describe('The amount of protein in the food item. Try to estimate the protein based on the ingredients and food item.'),
   fat: z.string().describe('The amount of fat in the food item. Try to estimate the fat based on the ingredients and food item. Be super concise and just get the number'),
   saturatedFat: z.string().optional().describe('The amount of saturated fat in the food item, if available. Only return the number.'),
-  transFat: z.string().optional().describe('Only get the assumed number of the amount of trans fat in the food. only return the number.'),
+  transFat: z.string().optional().describe('Only return the numerical value for transfats and round to 2 decimal places. The amount of trans fat in the food item, if available.'),
   cholesterol: z.string().optional().describe('The amount of cholesterol in the food item, if available. Be super concise and just get the number'),
   sodium: z.string().optional().describe('The amount of sodium in the food item, if available. Be super concise and just get the number'),
   sugar: z.string().optional().describe('The amount of sugar in the food item, if available. Be super concise and just get the number'),
@@ -53,6 +53,7 @@ Your task is to provide the following information:
 5.  **Allergens**: Identify potential allergens from the ingredients.
 
 DO NOT HALLUCINATE. Be concise with your responses and only include the information requested.
+RETURN ONLY THE NUMBERICAL VALUES, INGREDIENTS, AND ALLERGENS.
 
 
 Food Item: {{{foodItem}}}
