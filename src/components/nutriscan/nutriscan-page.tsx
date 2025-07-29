@@ -53,6 +53,11 @@ type FoodDetails = GenerateNutritionalDataOutput & {
   name: string;
 };
 
+type FoodOption = {
+  name: string;
+  isVegan: boolean;
+};
+
 const FatIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -93,7 +98,7 @@ export function NutriScanPage() {
   const [nutritionStatus, setNutritionStatus] =
     useState<NutritionStatus>('idle');
   const [menuImage, setMenuImage] = useState<string | null>(null);
-  const [foodOptions, setFoodOptions] = useState<string[]>([]);
+  const [foodOptions, setFoodOptions] = useState<FoodOption[]>([]);
   const [foodDetails, setFoodDetails] = useState<Map<string, FoodDetails>>(new Map());
   const [selectedFood, setSelectedFood] = useState<FoodDetails | null>(null);
   const [nutritionData, setNutritionData] =
@@ -332,15 +337,18 @@ export function NutriScanPage() {
                         {status === 'scanned' && foodOptions.length > 0 && (
                           <ul className="space-y-2">
                             {foodOptions.map((item, index) => (
-                              <li key={`${item}-${index}`}>
+                              <li key={`${item.name}-${index}`}>
                                 <SheetTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     className="h-auto w-full justify-start px-3 py-2 text-left"
-                                    onClick={() => fetchNutrition(item)}
+                                    onClick={() => fetchNutrition(item.name)}
                                   >
                                     <Soup className="mr-3 h-5 w-5 flex-shrink-0 text-primary/80" />
-                                    <span className="flex-1">{item}</span>
+                                    <span className="flex-1">{item.name}</span>
+                                    {item.isVegan && (
+                                      <Leaf className="ml-3 h-5 w-5 text-green-500" />
+                                    )}
                                     <BarChart className="ml-3 h-5 w-5 text-muted-foreground" />
                                   </Button>
                                 </SheetTrigger>

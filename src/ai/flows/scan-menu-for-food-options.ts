@@ -19,10 +19,15 @@ const ScanMenuForFoodOptionsInputSchema = z.object({
 });
 export type ScanMenuForFoodOptionsInput = z.infer<typeof ScanMenuForFoodOptionsInputSchema>;
 
+const FoodOptionSchema = z.object({
+  name: z.string().describe('The name of the food item.'),
+  isVegan: z.boolean().describe('Whether the food item is vegan.'),
+});
+
 const ScanMenuForFoodOptionsOutputSchema = z.object({
   foodOptions: z
-    .array(z.string())
-    .describe('A list of food items identified on the menu.'),
+    .array(FoodOptionSchema)
+    .describe('A list of food items identified on the menu, with vegan status.'),
 });
 export type ScanMenuForFoodOptionsOutput = z.infer<typeof ScanMenuForFoodOptionsOutputSchema>;
 
@@ -36,10 +41,13 @@ const prompt = ai.definePrompt({
   name: 'scanMenuForFoodOptionsPrompt',
   input: {schema: ScanMenuForFoodOptionsInputSchema},
   output: {schema: ScanMenuForFoodOptionsOutputSchema},
-  prompt: `You are an AI assistant that extracts food items from a restaurant menu image.
+  prompt: `You are an AI assistant that extracts food items from a restaurant menu image and determines if they are vegan.
 
-Analyze the provided menu photo and extract only the names of the food items. 
-- Do not include section headers, descriptions, or prices.
+Analyze the provided menu photo and extract the names of the food items and whether they are vegan.
+- For each food item, determine if it is vegan based on its name and description on the menu.
+- If the menu explicitly marks an item as vegan (e.g., with a 'V' or leaf icon), mark it as vegan.
+- If an item is not explicitly marked as vegan but appears to be vegan by its ingredients (e.g., "garden salad"), you can infer it is vegan.
+- Do not include section headers, descriptions, or prices in the item name.
 - Only return items that are clearly food or drink.
 - If you cannot identify any food items, return an empty list.
 
