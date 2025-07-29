@@ -184,6 +184,7 @@ export function NutriScanPage() {
       return;
     }
 
+    
     try {
       const nutrition = await generateNutritionalData({ foodItem });
       const details = { name: foodItem, ...nutrition };
