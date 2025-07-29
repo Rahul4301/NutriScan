@@ -274,7 +274,6 @@ export function NutriScanPage() {
                   ref={fileInputRef}
                   onChange={handleFileChange}
                   accept="image/*"
-                  capture="environment"
                   className="hidden"
                 />
                 <Button
@@ -283,7 +282,7 @@ export function NutriScanPage() {
                   onClick={handleUploadClick}
                 >
                   <UploadCloud className="mr-2 h-5 w-5" />
-                  Upload a Menu Photo
+                  Upload Menu
                 </Button>
                 <p className="mt-2 text-xs text-muted-foreground">
                   Take a picture or upload an image of a menu to get started.
