@@ -25,7 +25,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-2">
               <Salad className="h-8 w-8 text-primary" />
               <h1 className="text-2xl font-bold text-foreground font-headline">
-                NutriScan
+                NutriScan AI
               </h1>
             </div>
             <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ export default function LandingPage() {
             Unlock the Nutrition in Every Bite.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-            Navigate restaurant menus with confidence. NutriScan leverages
+            Navigate restaurant menus with confidence. NutriScan AI leverages
             advanced AI to provide instant, comprehensive nutritional insights
             directly from your photos.
           </p>
@@ -69,7 +69,7 @@ export default function LandingPage() {
           <div className="container mx-auto px-4">
             <div className="text-center">
               <h2 className="font-headline text-3xl font-bold text-foreground">
-                Why You'll Love NutriScan
+                Why You'll Love NutriScan AI
               </h2>
               <p className="mt-4 text-muted-foreground">
                 Making healthy choices has never been easier.
@@ -116,7 +116,7 @@ export default function LandingPage() {
 
       <footer className="border-t bg-background">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} NutriScan. All rights reserved.
+          © {new Date().getFullYear()} NutriScan AI. All rights reserved.
         </div>
       </footer>
     </div>
