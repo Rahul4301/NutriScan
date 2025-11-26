@@ -14,6 +14,7 @@ import {z} from 'genkit';
 const GenerateNutritionalDataInputSchema = z.object({
   foodItem: z.string().describe('The name of the food item to generate nutritional information for.'),
   ingredients: z.string().optional().describe('The ingredients of the food item, if available.'),
+  restaurantName: z.string().optional().describe('The name of the restaurant, if available.'),
 });
 export type GenerateNutritionalDataInput = z.infer<typeof GenerateNutritionalDataInputSchema>;
 
@@ -44,6 +45,9 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateNutritionalDataInputSchema},
   output: {schema: GenerateNutritionalDataOutputSchema},
   prompt: `You are a nutritional expert. Analyze the provided food item.
+If the restaurant name is provided, prioritize looking up the nutritional information from the restaurant's official website.
+If the restaurant name is not provided or the information is not available, check to see if some of the information is already present, such as calories or ingredients.
+If nutritional information is not available, use your knowledge to estimate the nutritional data.
 
 Your task is to provide the following information:
 1.  **Nutritional Data**: Generate the nutritional information (calories, carbs, protein, fat, etc.).
@@ -58,6 +62,7 @@ RETURN ONLY THE NUMBERICAL VALUES, INGREDIENTS, AND ALLERGENS.
 
 Food Item: {{{foodItem}}}
 Ingredients: {{{ingredients}}}
+Restaurant: {{{restaurantName}}}
 
 Nutritional Information: `,
 });

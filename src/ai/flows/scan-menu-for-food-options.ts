@@ -25,6 +25,7 @@ const FoodOptionSchema = z.object({
 });
 
 const ScanMenuForFoodOptionsOutputSchema = z.object({
+  restaurantName: z.string().optional().describe('The name of the restaurant, if identifiable.'),
   foodOptions: z
     .array(FoodOptionSchema)
     .describe('A list of food items identified on the menu, with vegan status.'),
@@ -44,7 +45,9 @@ const prompt = ai.definePrompt({
   prompt: `You are an AI assistant that extracts food items from a restaurant menu image and determines if they are vegan.
 
 Analyze the provided menu photo and extract the names of the food items and whether they are vegan.
+- First, identify the name of the restaurant from the menu.
 - For each food item, determine if it is vegan based on its name and description on the menu.
+- Check if the menu provides any nutritional information, such as calories or ingredients.
 - If the menu explicitly marks an item as vegan (e.g., with a 'V' or leaf icon), mark it as vegan.
 - If an item is not explicitly marked as vegan but appears to be vegan by its ingredients (e.g., "garden salad"), you can infer it is vegan.
 - Do not include section headers, descriptions, or prices in the item name.
