@@ -223,40 +223,40 @@ export function NutriScanPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Salad className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground font-headline">
-                NutriScan
-              </h1>
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="sticky top-0 z-10 border-b border-border/40 bg-background/95 backdrop-blur-xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                <Salad className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-xl font-semibold text-foreground">NutriScan</h1>
             </div>
             <div className="flex items-center gap-4">
               {user && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground hidden sm:inline">
                     {user.email}
                   </span>
-                  <Button variant="ghost" size="icon" onClick={handleLogout}>
+                  <Button variant="ghost" size="sm" onClick={handleLogout} className="rounded-full">
                     <LogOut className="h-5 w-5" />
                   </Button>
                 </div>
               )}
               {status !== 'idle' && (
-                <Button variant="ghost" onClick={resetState}>
-                  <Plus className="h-4 w-4 -rotate-45 mr-2" />
-                  Scan New Menu
+                <Button variant="ghost" size="sm" onClick={resetState} className="rounded-full text-muted-foreground hover:text-foreground">
+                  <Plus className="h-5 w-5 -rotate-45 mr-2" />
+                  New
                 </Button>
               )}
             </div>
           </div>
         </div>
       </header>
-      <main className="container mx-auto flex-1 p-4 sm:p-6 lg:p-8">
+      <main className="container mx-auto flex-1 p-4 sm:p-8 lg:p-10">
         {error && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive" className="mb-6 rounded-xl">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
@@ -264,17 +264,17 @@ export function NutriScanPage() {
         )}
 
         {status === 'idle' && (
-          <div className="flex h-[calc(100vh-15rem)] flex-col items-center justify-center text-center">
-            <Card className="w-full max-w-md">
-              <CardHeader>
-                <CardTitle className="font-headline text-3xl">
+          <div className="flex h-[calc(100vh-15rem)] flex-col items-center justify-center">
+            <div className="w-full max-w-sm space-y-8">
+              <div className="text-center space-y-3">
+                <h2 className="text-3xl font-bold text-foreground">
                   Welcome to NutriScan
-                </CardTitle>
-                <CardDescription>
+                </h2>
+                <p className="text-muted-foreground">
                   Get nutritional insights from any menu
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="space-y-4">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -284,25 +284,25 @@ export function NutriScanPage() {
                 />
                 <Button
                   size="lg"
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                  className="w-full rounded-full h-14 text-base font-medium"
                   onClick={handleUploadClick}
                 >
                   <UploadCloud className="mr-2 h-5 w-5" />
                   Upload Menu
                 </Button>
-                <p className="mt-2 text-xs text-muted-foreground">
+                <p className="text-center text-sm text-muted-foreground">
                   Take a picture or upload an image of a menu to get started.
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )}
 
         {status !== 'idle' && (
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            <div className="flex flex-col gap-4">
-              <h2 className="font-headline text-2xl font-bold">Menu</h2>
-              <Card className="overflow-hidden">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+            <div className="lg:col-span-2 space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">Menu</h2>
+              <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 {menuImage && (
                   <Image
                     src={menuImage}
@@ -313,79 +313,74 @@ export function NutriScanPage() {
                     data-ai-hint="restaurant menu"
                   />
                 )}
-              </Card>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-4">
-              <h2 className="font-headline text-2xl font-bold">
+            <div className="lg:col-span-3 space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">
                 Detected Items
               </h2>
-              <Sheet onOpenChange={(open) => !open && setSelectedFood(null)}>
-                <Card>
-                  <CardContent className="p-0">
-                    <ScrollArea className="h-[calc(100vh-16rem)]">
-                      <div className="p-4">
-                        {(status === 'scanning' || status === 'analyzing') && (
-                          <div className="space-y-4">
-                            <p className="text-center text-muted-foreground">
-                              {loadingMessage}
-                            </p>
-                            {Array.from({ length: 10 }).map((_, i) => (
-                              <Skeleton key={i} className="h-10 w-full" />
-                            ))}
-                          </div>
-                        )}
-                        {status === 'scanned' && foodOptions.length > 0 && (
-                          <ul className="space-y-2">
-                            {foodOptions.map((item, index) => (
-                              <li key={`${item.name}-${index}`}>
-                                <SheetTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    className="h-auto w-full justify-start px-3 py-2 text-left"
-                                    onClick={() => fetchNutrition(item.name)}
-                                  >
-                                    <Soup className="mr-3 h-5 w-5 flex-shrink-0 text-primary/80" />
-                                    <span className="flex-1">{item.name}</span>
-                                    {item.isVegan && (
-                                      <Leaf className="ml-3 h-5 w-5 text-green-500" />
-                                    )}
-                                    <BarChart className="ml-3 h-5 w-5 text-muted-foreground" />
-                                  </Button>
-                                </SheetTrigger>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                        {status === 'scanned' && foodOptions.length === 0 && (
-                          <p className="py-10 text-center text-muted-foreground">
-                            No food items could be detected. Please try a
-                            clearer image.
+              <Sheet onOpenChange={(open: boolean) => !open && setSelectedFood(null)}>
+                <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm">
+                  <ScrollArea className="h-[calc(100vh-16rem)]">
+                    <div className="p-4 space-y-2">
+                      {(status === 'scanning' || status === 'analyzing') && (
+                        <div className="space-y-4 py-8">
+                          <p className="text-center text-sm text-muted-foreground">
+                            {loadingMessage}
                           </p>
-                        )}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-                <SheetContent className="w-full sm:max-w-md">
-                  <SheetHeader>
-                    <SheetTitle className="font-headline text-2xl">
+                          {Array.from({ length: 8 }).map((_, i) => (
+                            <Skeleton key={i} className="h-10 w-full rounded-lg" />
+                          ))}
+                        </div>
+                      )}
+                      {status === 'scanned' && foodOptions.length > 0 && (
+                        <ul className="space-y-1">
+                          {foodOptions.map((item, index) => (
+                            <li key={`${item.name}-${index}`}>
+                              <SheetTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="h-auto w-full justify-start px-4 py-3 text-left text-base font-normal hover:bg-secondary/50 rounded-lg transition-colors"
+                                  onClick={() => fetchNutrition(item.name)}
+                                >
+                                  <Soup className="mr-3 h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+                                  <span className="flex-1">{item.name}</span>
+                                  {item.isVegan && (
+                                    <Leaf className="ml-2 h-4 w-4 text-green-600 dark:text-green-400" />
+                                  )}
+                                </Button>
+                              </SheetTrigger>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {status === 'scanned' && foodOptions.length === 0 && (
+                        <p className="py-12 text-center text-muted-foreground">
+                          No food items could be detected. Please try a clearer image.
+                        </p>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+                <SheetContent className="w-full sm:max-w-lg">
+                  <SheetHeader className="space-y-2">
+                    <SheetTitle className="text-2xl font-bold">
                       {selectedFood?.name}
                     </SheetTitle>
-                    <SheetDescription>
-                      Estimated nutritional information. Varies based on
-                      preparation and ingredients.
+                    <SheetDescription className="text-sm">
+                      Estimated nutritional information. Varies based on preparation and ingredients.
                     </SheetDescription>
                   </SheetHeader>
-                  <Separator className="my-4" />
+                  <Separator className="my-6" />
                   <ScrollArea className="h-[calc(100vh-10rem)] pr-4">
-                    <div className="pb-4">
+                    <div className="pb-4 space-y-6">
                       {nutritionStatus === 'loading' && <NutritionSkeleton />}
                       {nutritionStatus === 'loaded' && nutritionData && (
                         <NutritionInfo data={nutritionData} />
                       )}
                       {nutritionStatus === 'error' && (
-                        <p className="text-destructive">
+                        <p className="text-sm text-destructive">
                           Could not load nutritional data.
                         </p>
                       )}
@@ -420,44 +415,47 @@ const NutritionInfo = ({
   ].filter((item) => item.value);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {data.healthRating && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-4 text-center">
-            <p className="text-sm text-muted-foreground">Health Rating</p>
-            <p className="text-2xl font-bold">{data.healthRating}/10</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-950/30 dark:to-blue-950/30 border border-green-200/50 dark:border-green-900/50 p-6 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">Health Rating</p>
+          <div className="flex items-baseline justify-center gap-2">
+            <p className="text-4xl font-bold text-green-600 dark:text-green-400">{data.healthRating}</p>
+            <p className="text-lg text-muted-foreground">/10</p>
+          </div>
+        </div>
       )}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {items.slice(0, 4).map((item) => (
-          <Card key={item.label}>
-            <CardContent className="flex flex-col items-center justify-center p-4 text-center">
-              {item.icon && <item.icon className="mb-2 h-6 w-6 text-accent" />}
-              <p className="text-sm text-muted-foreground">{item.label}</p>
-              <p className="text-xl font-bold">{item.value}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <Separator />
-      <div className="space-y-2">
-        {items.slice(4).map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center justify-between text-sm"
-          >
-            <p className="text-muted-foreground">{item.label}</p>
-            <p className="font-medium">{item.value}</p>
+          <div key={item.label} className="rounded-xl border border-border/40 bg-secondary/30 p-4 text-center hover:border-border/60 transition-colors">
+            {item.icon && <item.icon className="mb-2 h-5 w-5 text-green-600 dark:text-green-400 mx-auto" />}
+            <p className="text-xs text-muted-foreground">{item.label}</p>
+            <p className="text-lg font-semibold mt-1">{item.value}</p>
           </div>
         ))}
       </div>
+      {items.length > 4 && (
+        <>
+          <Separator />
+          <div className="space-y-3">
+            {items.slice(4).map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between rounded-lg p-3 hover:bg-secondary/30 transition-colors"
+              >
+                <p className="text-sm font-medium text-muted-foreground">{item.label}</p>
+                <p className="text-sm font-semibold">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
       {data.ingredients && (
         <>
           <Separator />
           <div>
-            <h4 className="mb-2 font-semibold">Ingredients</h4>
-            <p className="text-sm text-muted-foreground">
+            <h4 className="font-semibold mb-3 text-foreground">Ingredients</h4>
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {data.ingredients}
             </p>
           </div>
@@ -467,10 +465,18 @@ const NutritionInfo = ({
         <>
           <Separator />
           <div>
-            <h4 className="mb-2 font-semibold">Potential Allergens</h4>
-            <p className="text-sm text-muted-foreground">
-              {Array.isArray(data.allergens) ? data.allergens.join(', ') : data.allergens}
-            </p>
+            <h4 className="font-semibold mb-3 text-foreground">Potential Allergens</h4>
+            <div className="flex flex-wrap gap-2">
+              {Array.isArray(data.allergens) ? (
+                (data.allergens as string[]).map((allergen: string, idx: number) => (
+                  <span key={idx} className="inline-block px-3 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium">
+                    {allergen}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-muted-foreground">{data.allergens}</span>
+              )}
+            </div>
           </div>
         </>
       )}
