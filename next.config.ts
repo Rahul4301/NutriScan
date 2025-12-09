@@ -11,9 +11,8 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Explicitly opt into Turbopack to silence Next 16 warning when plugins add webpack config
+  turbopack: {},
   images: {
     remotePatterns: [
       {
