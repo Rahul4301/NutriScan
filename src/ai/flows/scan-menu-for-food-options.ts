@@ -7,42 +7,46 @@
  * - ScanMenuForFoodOptionsOutput - The return type for the scanMenuForFoodOptions function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const ScanMenuForFoodOptionsInputSchema = z.object({
-  menuPhotoDataUri: z
-    .string()
-    .describe(
-      "A photo of a restaurant menu, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
-});
-export type ScanMenuForFoodOptionsInput = z.infer<typeof ScanMenuForFoodOptionsInputSchema>;
+export type ScanMenuForFoodOptionsInput = {
+  menuPhotoDataUri: string;
+};
 
-const FoodOptionSchema = z.object({
-  name: z.string().describe('The name of the food item.'),
-  isVegan: z.boolean().describe('Whether the food item is vegan.'),
-});
+export type FoodOption = {
+  name: string;
+  isVegan: boolean;
+};
 
-const ScanMenuForFoodOptionsOutputSchema = z.object({
-  restaurantName: z.string().optional().describe('The name of the restaurant, if identifiable.'),
-  foodOptions: z
-    .array(FoodOptionSchema)
-    .describe('A list of food items identified on the menu, with vegan status.'),
-});
-export type ScanMenuForFoodOptionsOutput = z.infer<typeof ScanMenuForFoodOptionsOutputSchema>;
+export type ScanMenuForFoodOptionsOutput = {
+  restaurantName?: string;
+  foodOptions: FoodOption[];
+};
 
 export async function scanMenuForFoodOptions(
   input: ScanMenuForFoodOptionsInput
 ): Promise<ScanMenuForFoodOptionsOutput> {
-  return scanMenuForFoodOptionsFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'scanMenuForFoodOptionsPrompt',
-  input: {schema: ScanMenuForFoodOptionsInputSchema},
-  output: {schema: ScanMenuForFoodOptionsOutputSchema},
-  prompt: `You are an AI assistant that extracts food items from a restaurant menu image and determines if they are vegan.
+  try {
+    console.log('Starting menu scan...');
+    
+    const apiKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('Missing GOOGLE_GENAI_API_KEY or GEMINI_API_KEY');
+    }
+    
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    
+    // Extract base64 data from data URI
+    const base64Match = input.menuPhotoDataUri.match(/^data:([^;]+);base64,(.*)$/);
+    if (!base64Match) {
+      throw new Error('Invalid data URI format');
+    }
+    
+    const mimeType = base64Match[1];
+    const base64Data = base64Match[2];
+    
+    const prompt = `You are an AI assistant that extracts food items from a restaurant menu image and determines if they are vegan.
 
 Analyze the provided menu photo and extract the names of the food items and whether they are vegan.
 - First, identify the name of the restaurant from the menu.
@@ -54,17 +58,39 @@ Analyze the provided menu photo and extract the names of the food items and whet
 - Only return items that are clearly food or drink.
 - If you cannot identify any food items, return an empty list.
 
-Menu Photo: {{media url=menuPhotoDataUri}}`,
-});
-
-const scanMenuForFoodOptionsFlow = ai.defineFlow(
-  {
-    name: 'scanMenuForFoodOptionsFlow',
-    inputSchema: ScanMenuForFoodOptionsInputSchema,
-    outputSchema: ScanMenuForFoodOptionsOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+Return the result as a JSON object with this structure:
+{
+  "restaurantName": "Restaurant Name (optional)",
+  "foodOptions": [
+    {"name": "Food Item Name", "isVegan": true/false}
+  ]
+}`;
+    
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          mimeType,
+          data: base64Data
+        }
+      }
+    ]);
+    
+    const response = result.response;
+    const text = response.text();
+    
+    // Parse JSON from the response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error('No JSON found in response:', text);
+      return { foodOptions: [] };
+    }
+    
+    const parsed = JSON.parse(jsonMatch[0]) as ScanMenuForFoodOptionsOutput;
+    console.log('Menu scan successful:', parsed);
+    return parsed;
+  } catch (error) {
+    console.error('Error in scanMenuForFoodOptions:', error);
+    throw error;
   }
-);
+}
