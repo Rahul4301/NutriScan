@@ -223,15 +223,18 @@ export function NutriScanPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b border-border/40 bg-background/95 backdrop-blur-xl">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-secondary/60">
+      <header className="sticky top-0 z-10 border-b border-border/50 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                <Salad className="h-6 w-6 text-white" />
+              <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary/85 via-accent/80 to-primary flex items-center justify-center shadow-sm">
+                <Salad className="h-6 w-6 text-primary-foreground" />
               </div>
-              <h1 className="text-xl font-semibold text-foreground">NutriScan</h1>
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">NutriScan</p>
+                <h1 className="text-lg font-headline text-foreground">Scan warmly. Eat calmly.</h1>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               {user && (
@@ -239,15 +242,15 @@ export function NutriScanPage() {
                   <span className="text-sm text-muted-foreground hidden sm:inline">
                     {user.email}
                   </span>
-                  <Button variant="ghost" size="sm" onClick={handleLogout} className="rounded-full">
+                  <Button variant="ghost" size="sm" onClick={handleLogout} className="rounded-full hover:bg-secondary/70">
                     <LogOut className="h-5 w-5" />
                   </Button>
                 </div>
               )}
               {status !== 'idle' && (
-                <Button variant="ghost" size="sm" onClick={resetState} className="rounded-full text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="sm" onClick={resetState} className="rounded-full text-foreground hover:bg-secondary/70">
                   <Plus className="h-5 w-5 -rotate-45 mr-2" />
-                  New
+                  New scan
                 </Button>
               )}
             </div>
@@ -265,13 +268,14 @@ export function NutriScanPage() {
 
         {status === 'idle' && (
           <div className="flex h-[calc(100vh-15rem)] flex-col items-center justify-center">
-            <div className="w-full max-w-sm space-y-8">
-              <div className="text-center space-y-3">
-                <h2 className="text-3xl font-bold text-foreground">
-                  Welcome to NutriScan
+            <div className="w-full max-w-md space-y-8 rounded-3xl border border-border/60 bg-card/90 p-10 shadow-[0_16px_40px_-28px_rgba(0,0,0,0.45)]">
+              <div className="text-center space-y-2">
+                <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Start here</p>
+                <h2 className="text-3xl font-headline text-foreground">
+                  Scan a menu, stay kind to yourself.
                 </h2>
                 <p className="text-muted-foreground">
-                  Get nutritional insights from any menu
+                  Upload a menu photo and get gentle nutrition insights in seconds.
                 </p>
               </div>
               <div className="space-y-4">
@@ -284,14 +288,14 @@ export function NutriScanPage() {
                 />
                 <Button
                   size="lg"
-                  className="w-full rounded-full h-14 text-base font-medium"
+                  className="w-full rounded-full h-14 text-base font-semibold bg-foreground text-background hover:bg-foreground/90"
                   onClick={handleUploadClick}
                 >
                   <UploadCloud className="mr-2 h-5 w-5" />
-                  Upload Menu
+                  Upload menu photo
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">
-                  Take a picture or upload an image of a menu to get started.
+                  Prefer a demo? Use any menu photo from your camera roll.
                 </p>
               </div>
             </div>
@@ -301,8 +305,8 @@ export function NutriScanPage() {
         {status !== 'idle' && (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
             <div className="lg:col-span-2 space-y-4">
-              <h2 className="text-2xl font-bold text-foreground">Menu</h2>
-              <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <h2 className="text-2xl font-headline text-foreground">Menu</h2>
+              <div className="rounded-3xl border border-border/60 bg-card/90 overflow-hidden shadow-[0_18px_48px_-32px_rgba(0,0,0,0.45)]">
                 {menuImage && (
                   <Image
                     src={menuImage}
@@ -317,11 +321,11 @@ export function NutriScanPage() {
             </div>
 
             <div className="lg:col-span-3 space-y-4">
-              <h2 className="text-2xl font-bold text-foreground">
-                Detected Items
+              <h2 className="text-2xl font-headline text-foreground">
+                Detected items
               </h2>
               <Sheet onOpenChange={(open: boolean) => !open && setSelectedFood(null)}>
-                <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm">
+                <div className="rounded-3xl border border-border/60 bg-card/90 overflow-hidden shadow-[0_18px_48px_-32px_rgba(0,0,0,0.45)]">
                   <ScrollArea className="h-[calc(100vh-16rem)]">
                     <div className="p-4 space-y-2">
                       {(status === 'scanning' || status === 'analyzing') && (
@@ -341,13 +345,13 @@ export function NutriScanPage() {
                               <SheetTrigger asChild>
                                 <Button
                                   variant="ghost"
-                                  className="h-auto w-full justify-start px-4 py-3 text-left text-base font-normal hover:bg-secondary/50 rounded-lg transition-colors"
+                                  className="h-auto w-full justify-start px-4 py-3 text-left text-base font-medium hover:bg-secondary/70 rounded-xl transition-colors"
                                   onClick={() => fetchNutrition(item.name)}
                                 >
-                                  <Soup className="mr-3 h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+                                  <Soup className="mr-3 h-5 w-5 flex-shrink-0 text-primary" />
                                   <span className="flex-1">{item.name}</span>
                                   {item.isVegan && (
-                                    <Leaf className="ml-2 h-4 w-4 text-green-600 dark:text-green-400" />
+                                    <Leaf className="ml-2 h-4 w-4 text-primary" />
                                   )}
                                 </Button>
                               </SheetTrigger>
