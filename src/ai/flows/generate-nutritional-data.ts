@@ -32,7 +32,7 @@ const GenerateNutritionalDataOutputSchema = z.object({
   ingredients: z.string().optional().describe('A list of the ingredients, if available. Be concise and just list the ingredients. If not available, infer them based on the food item.'),
   isVegan: z.boolean().optional().describe('Whether the food item is vegan. Assume based off of the name and what you know about the food.'),
   healthRating: z.number().optional().describe('A health rating out of 10 for the food item, assume based on the food name. 10 is healthiest, 1 is least healthy.'),
-  allergens: z.array(z.string()).optional().describe('A list of potential allergens in the food item. Be concise and just list the possible allergens. if there are none found, return none.'),
+  allergens: z.array(z.string()).optional().describe('A list of potential allergens in the food item. Be concise and just list the possible allergens. if there are none, return none.'),
 });
 export type GenerateNutritionalDataOutput = z.infer<typeof GenerateNutritionalDataOutputSchema>;
 
