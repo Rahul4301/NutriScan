@@ -322,19 +322,21 @@ export function NutriScanPage() {
         {/* Glassmorphic Food Cards - Overlay */}
         <AnimatePresence>
           {status === 'scanned' && foodOptions.length > 0 && (
-            <div className="absolute inset-0 overflow-y-auto p-4 pb-32">
-              <div className="max-w-md mx-auto space-y-4">
-                {foodOptions.map((item, index) => (
-                  <FoodCard
-                    key={`${item.name}-${index}`}
-                    foodItem={item}
-                    index={index}
-                    onSelect={() => fetchNutrition(item.name)}
-                    selected={selectedFood?.name === item.name}
-                    details={selectedFood?.name === item.name ? selectedFood : null}
-                    nutritionStatus={selectedFood?.name === item.name ? nutritionStatus : 'idle'}
-                  />
-                ))}
+            <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
+              <div className="overflow-y-auto max-h-[70vh] p-4 pb-32 pointer-events-auto">
+                <div className="max-w-md mx-auto space-y-4">
+                  {foodOptions.map((item, index) => (
+                    <FoodCard
+                      key={`${item.name}-${index}`}
+                      foodItem={item}
+                      index={index}
+                      onSelect={() => fetchNutrition(item.name)}
+                      selected={selectedFood?.name === item.name}
+                      details={selectedFood?.name === item.name ? selectedFood : null}
+                      nutritionStatus={selectedFood?.name === item.name ? nutritionStatus : 'idle'}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -535,12 +537,12 @@ function FoodCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      initial={{ opacity: 0, y: 100, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      exit={{ opacity: 0, y: 100, scale: 0.95 }}
       transition={{
-        duration: 0.5,
-        delay: index * 0.1,
+        duration: 0.6,
+        delay: index * 0.08,
         ease: [0.16, 1, 0.3, 1],
       }}
       className="rounded-3xl bg-[#F5F5F0]/90 backdrop-blur-xl border border-[#4A6741]/20 shadow-2xl overflow-hidden"
