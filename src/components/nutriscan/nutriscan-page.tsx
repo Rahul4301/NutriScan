@@ -7,11 +7,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle,
   Beef,
+  Flame,
   Leaf,
   LogOut,
   UploadCloud,
   Wheat,
   X,
+  Heart,
 } from 'lucide-react';
 import { scanMenuForFoodOptions } from '@/ai/flows/scan-menu-for-food-options';
 import {
@@ -583,6 +585,34 @@ function FoodCard({
             className="overflow-hidden border-t border-[#4A6741]/10"
           >
             <div className="p-6 space-y-6">
+              {/* Health Rating & Calories */}
+              {(details.healthRating !== undefined || details.calories) && (
+                <div className="grid grid-cols-2 gap-4">
+                  {details.healthRating !== undefined && (
+                    <div className="rounded-2xl bg-[#4A6741]/5 p-4 border border-[#4A6741]/10">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Heart className="h-4 w-4 text-[#4A6741]" />
+                        <p className="text-xs text-[#4A6741]/70 font-medium">Health Rating</p>
+                      </div>
+                      <p className="text-2xl font-headline text-[#4A6741]">
+                        {details.healthRating}/10
+                      </p>
+                    </div>
+                  )}
+                  {details.calories && (
+                    <div className="rounded-2xl bg-[#C27D5F]/5 p-4 border border-[#C27D5F]/10">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Flame className="h-4 w-4 text-[#C27D5F]" />
+                        <p className="text-xs text-[#C27D5F]/70 font-medium">Calories</p>
+                      </div>
+                      <p className="text-2xl font-headline text-[#C27D5F]">
+                        {details.calories}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Macro Stats */}
               <div className="grid grid-cols-3 gap-4">
                 <MacroStat
@@ -605,12 +635,42 @@ function FoodCard({
                 />
               </div>
 
+              {/* Allergens */}
+              {details.allergens && details.allergens.length > 0 && (
+                <div className="pt-2 border-t border-[#4A6741]/10">
+                  <div className="flex items-center gap-2 mb-3">
+                    <AlertCircle className="h-4 w-4 text-[#C27D5F]" />
+                    <p className="text-sm font-medium text-[#4A6741]">Potential Allergens</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {details.allergens.map((allergen, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-block px-3 py-1.5 rounded-full bg-[#C27D5F]/10 text-[#C27D5F] text-xs font-medium border border-[#C27D5F]/20"
+                      >
+                        {allergen}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ingredients */}
+              {details.ingredients && (
+                <div className="pt-2 border-t border-[#4A6741]/10">
+                  <p className="text-sm font-medium text-[#4A6741] mb-2">Ingredients</p>
+                  <p className="text-sm text-[#4A6741]/70 font-body leading-relaxed">
+                    {details.ingredients}
+                  </p>
+                </div>
+              )}
+
               {/* Gentle Insight Footer */}
               <div className="pt-4 border-t border-[#4A6741]/10">
                 <p className="text-sm text-[#4A6741]/80 font-body italic leading-relaxed">
                   {generateGentleInsight(details)}
-            </p>
-          </div>
+                </p>
+              </div>
             </div>
           </motion.div>
         )}
