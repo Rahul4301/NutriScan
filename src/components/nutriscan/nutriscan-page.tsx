@@ -143,15 +143,45 @@ export function NutriScanPage() {
     setFoodOptions([]);
     try {
       const result = await scanMenuForFoodOptions({ menuPhotoDataUri: dataUri });
-      setFoodOptions(result.foodOptions);
-      setStatus('scanned');
-    } catch (e) {
-      console.error(e);
-      if (e instanceof Error && e.message.includes('[429 Too Many Requests]')) {
-        setError('Too many API requests made. Please try again later.');
+      if (result.foodOptions && result.foodOptions.length > 0) {
+        setFoodOptions(result.foodOptions);
+        
+        // If direct food analysis is available, pre-populate the nutrition data
+        if (result.directFoodAnalysis) {
+          const directFood = result.directFoodAnalysis;
+          const details: FoodDetails = {
+            name: directFood.name,
+            calories: directFood.calories,
+            protein: directFood.protein,
+            carbs: directFood.carbs,
+            fat: directFood.fat,
+            isVegan: directFood.isVegan,
+          };
+          setFoodDetails(prev => new Map(prev).set(directFood.name, details));
+        }
+        
+        setStatus('scanned');
       } else {
-        setError('Failed to scan menu. Please try another image.');
+        setError('No food items were detected in this image. Please try a clearer menu photo.');
+        setStatus('error');
       }
+    } catch (e) {
+      console.error('Scan error:', e);
+      let errorMessage = 'Failed to scan menu. Please try another image.';
+      
+      if (e instanceof Error) {
+        if (e.message.includes('[429 Too Many Requests]')) {
+          errorMessage = 'Too many API requests made. Please try again later.';
+        } else if (e.message.includes('Missing GOOGLE_GENAI_API_KEY') || e.message.includes('Missing GEMINI_API_KEY')) {
+          errorMessage = 'API key is missing. Please configure GOOGLE_GENAI_API_KEY or GEMINI_API_KEY.';
+        } else if (e.message.includes('Invalid menuPhotoDataUri')) {
+          errorMessage = 'Invalid image format. Please try uploading the image again.';
+        } else {
+          errorMessage = `Failed to scan menu: ${e.message}. Please try another image.`;
+        }
+      }
+      
+      setError(errorMessage);
       setStatus('error');
     }
   }, []);
@@ -161,6 +191,7 @@ export function NutriScanPage() {
     setNutritionStatus('loading');
     setError(null);
 
+    // Check if we already have nutrition data (from direct analysis or previous fetch)
     if (foodDetails.has(foodItem)) {
       const details = foodDetails.get(foodItem)!;
       setSelectedFood(details);
@@ -314,24 +345,44 @@ export function NutriScanPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="absolute top-20 left-4 right-4 z-50"
+              className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
             >
-              <div className="bg-red-50/95 backdrop-blur-md border border-red-200/50 rounded-3xl p-4 shadow-lg max-w-md mx-auto">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-red-900">{error}</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setError(null)}
-                      className="mt-2 h-8 px-3 text-xs text-red-700 hover:text-red-900 hover:bg-red-100/50"
-                    >
-                      Dismiss
-                    </Button>
+              <motion.div
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                className="bg-red-50/95 backdrop-blur-md border border-red-200/50 rounded-3xl p-6 shadow-2xl max-w-md w-full"
+              >
+                <div className="flex items-start gap-4">
+                  <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 space-y-4">
+                    <div>
+                      <h3 className="text-base font-semibold text-red-900 mb-2">Scan Failed</h3>
+                      <p className="text-sm text-red-800 leading-relaxed">{error}</p>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setError(null);
+                          resetState();
+                        }}
+                        className="flex-1 h-10 px-4 text-sm text-red-700 hover:text-red-900 hover:bg-red-100/50 rounded-full"
+                      >
+                        Try Again
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setError(null)}
+                        className="h-10 px-4 text-sm text-red-600 hover:text-red-800 hover:bg-red-100/30 rounded-full"
+                      >
+                        Dismiss
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

@@ -18,6 +18,14 @@ export type FoodOption = {
 export type ScanMenuForFoodOptionsOutput = {
   restaurantName?: string;
   foodOptions: FoodOption[];
+  directFoodAnalysis?: {
+    name: string;
+    isVegan: boolean;
+    calories: string;
+    carbs: string;
+    protein: string;
+    fat: string;
+  };
 };
 
 const MODEL_ID = 'gemini-2.5-flash';
@@ -77,16 +85,97 @@ Return JSON only, in this shape:
   const text = result.response.text();
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    // Fallback: no structured data found
-    return { foodOptions: [] };
+    // Fallback: no structured data found, try direct food identification
+    return await identifyFoodFromImage(mimeType, base64Data, apiKey);
   }
 
   try {
     const parsed = JSON.parse(jsonMatch[0]) as ScanMenuForFoodOptionsOutput;
     if (!parsed.foodOptions) parsed.foodOptions = [];
+    
+    // If no food options found, try to identify food directly from image
+    if (parsed.foodOptions.length === 0) {
+      return await identifyFoodFromImage(mimeType, base64Data, apiKey);
+    }
+    
     return parsed;
   } catch (err) {
     console.error('Failed to parse menu JSON', err, text);
+    // Try direct food identification as fallback
+    return await identifyFoodFromImage(mimeType, base64Data, apiKey);
+  }
+}
+
+async function identifyFoodFromImage(
+  mimeType: string,
+  base64Data: string,
+  apiKey: string
+): Promise<ScanMenuForFoodOptionsOutput> {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: MODEL_ID });
+
+  const foodIdentificationPrompt = `You are a food identification expert. Analyze this image and identify what kind of food or dish it shows.
+
+If this is a photo of actual food (not a menu), identify:
+1. The type of food or dish (e.g., "Grilled Chicken Salad", "Pasta Carbonara", "Caesar Salad")
+2. Whether it appears to be vegan
+3. Estimate the nutritional information (calories, protein, carbs, fat) for a typical serving
+
+Return JSON only, in this shape:
+{
+  "name": "string (food/dish name)",
+  "isVegan": true|false,
+  "calories": "string (e.g., '350')",
+  "protein": "string (e.g., '25g')",
+  "carbs": "string (e.g., '30g')",
+  "fat": "string (e.g., '15g')"
+}`;
+
+  try {
+    const result = await model.generateContent({
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: foodIdentificationPrompt },
+            {
+              inlineData: {
+                mimeType,
+                data: base64Data,
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const text = result.response.text();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return { foodOptions: [] };
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (parsed.name) {
+      return {
+        foodOptions: [{
+          name: parsed.name,
+          isVegan: parsed.isVegan || false,
+        }],
+        directFoodAnalysis: {
+          name: parsed.name,
+          isVegan: parsed.isVegan || false,
+          calories: parsed.calories || 'N/A',
+          carbs: parsed.carbs || 'N/A',
+          protein: parsed.protein || 'N/A',
+          fat: parsed.fat || 'N/A',
+        },
+      };
+    }
+
+    return { foodOptions: [] };
+  } catch (err) {
+    console.error('Failed to identify food from image', err);
     return { foodOptions: [] };
   }
 }
