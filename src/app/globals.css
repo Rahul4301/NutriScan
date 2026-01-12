@@ -2,120 +2,105 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: 0.01em;
+  }
+
+  :root {
+    /* Oatmeal Silk aesthetic */
+    --background: 60 14% 95%; /* #F5F5F0 */
+    --foreground: 24 15% 15%;
+    --card: 60 12% 97%;
+    --card-foreground: 24 15% 15%;
+    --popover: 60 14% 95%;
+    --popover-foreground: 24 15% 15%;
+    --primary: 107 23% 33%; /* Heritage Sage #4A6741 */
+    --primary-foreground: 60 14% 98%;
+    --secondary: 60 12% 92%;
+    --secondary-foreground: 24 15% 20%;
+    --muted: 60 10% 88%;
+    --muted-foreground: 24 12% 40%;
+    --accent: 18 45% 57%; /* Terracotta Ember #C27D5F */
+    --accent-foreground: 60 14% 98%;
+    --destructive: 2 76% 56%;
+    --destructive-foreground: 60 14% 98%;
+    --border: 60 10% 85%;
+    --input: 60 12% 90%;
+    --ring: 107 23% 33%;
+    --chart-1: 107 23% 33%;
+    --chart-2: 18 45% 57%;
+    --chart-3: 12 70% 52%;
+    --chart-4: 196 36% 42%;
+    --chart-5: 330 35% 48%;
+    --radius: 0.9rem;
+    --sidebar-background: 60 14% 95%;
+    --sidebar-foreground: 24 15% 15%;
+    --sidebar-primary: 107 23% 33%;
+    --sidebar-primary-foreground: 60 14% 98%;
+    --sidebar-accent: 60 12% 92%;
+    --sidebar-accent-foreground: 24 15% 20%;
+    --sidebar-border: 60 10% 85%;
+    --sidebar-ring: 107 23% 33%;
+  }
+
+  .dark {
+    --background: 24 12% 10%;
+    --foreground: 60 14% 94%;
+    --card: 24 12% 14%;
+    --card-foreground: 60 14% 94%;
+    --popover: 24 12% 14%;
+    --popover-foreground: 60 14% 94%;
+    --primary: 107 23% 45%;
+    --primary-foreground: 24 12% 8%;
+    --secondary: 24 10% 20%;
+    --secondary-foreground: 60 14% 90%;
+    --muted: 24 10% 24%;
+    --muted-foreground: 60 14% 68%;
+    --accent: 18 45% 65%;
+    --accent-foreground: 24 12% 8%;
+    --destructive: 2 65% 52%;
+    --destructive-foreground: 60 14% 96%;
+    --border: 24 12% 24%;
+    --input: 24 12% 20%;
+    --ring: 107 23% 45%;
+    --chart-1: 107 23% 45%;
+    --chart-2: 18 45% 65%;
+    --chart-3: 12 62% 48%;
+    --chart-4: 196 32% 52%;
+    --chart-5: 330 32% 52%;
+    --sidebar-background: 24 12% 12%;
+    --sidebar-foreground: 60 14% 94%;
+    --sidebar-primary: 107 23% 45%;
+    --sidebar-primary-foreground: 24 12% 8%;
+    --sidebar-accent: 24 10% 20%;
+    --sidebar-accent-foreground: 60 14% 92%;
+    --sidebar-border: 24 12% 24%;
+    --sidebar-ring: 107 23% 45%;
+  }
+
+  * {
+    @apply border-border;
+  }
 }
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3%;
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 3%;
-    --popover: 0 0% 98%;
-    --popover-foreground: 0 0% 3%;
-    --primary: 142 71% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 3%;
-    --muted: 0 0% 93%;
-    body {
-      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
 
-    @layer base {
-      :root {
-        --background: 36 48% 96%;
-        --foreground: 24 15% 12%;
-        --card: 32 38% 94%;
-        --card-foreground: 24 15% 12%;
-        --popover: 36 48% 96%;
-        --popover-foreground: 24 15% 12%;
-        --primary: 145 32% 42%;
-        --primary-foreground: 36 60% 98%;
-        --secondary: 32 28% 90%;
-        --secondary-foreground: 24 15% 20%;
-        --muted: 28 22% 82%;
-        --muted-foreground: 24 12% 40%;
-        --accent: 28 75% 58%;
-        --accent-foreground: 36 60% 98%;
-        --destructive: 2 76% 56%;
-        --destructive-foreground: 36 60% 98%;
-        --border: 28 20% 84%;
-        --input: 32 24% 88%;
-        --ring: 145 32% 42%;
-        --chart-1: 145 32% 42%;
-        --chart-2: 28 75% 58%;
-        --chart-3: 12 70% 52%;
-        --chart-4: 196 36% 42%;
-        --chart-5: 330 35% 48%;
-        --radius: 0.9rem;
-        --sidebar-background: 36 48% 96%;
-        --sidebar-foreground: 24 15% 12%;
-        --sidebar-primary: 145 32% 42%;
-        --sidebar-primary-foreground: 36 60% 98%;
-        --sidebar-accent: 32 28% 90%;
-        --sidebar-accent-foreground: 24 15% 20%;
-        --sidebar-border: 28 20% 84%;
-        --sidebar-ring: 145 32% 42%;
-      }
-      .dark {
-        --background: 24 12% 10%;
-        --foreground: 36 60% 94%;
-        --card: 24 12% 14%;
-        --card-foreground: 36 60% 94%;
-        --popover: 24 12% 14%;
-        --popover-foreground: 36 60% 94%;
-        --primary: 145 32% 52%;
-        --primary-foreground: 24 12% 8%;
-        --secondary: 24 10% 20%;
-        --secondary-foreground: 36 60% 90%;
-        --muted: 24 10% 24%;
-        --muted-foreground: 36 18% 68%;
-        --accent: 28 70% 58%;
-        --accent-foreground: 24 12% 8%;
-        --destructive: 2 65% 52%;
-        --destructive-foreground: 36 60% 96%;
-        --border: 24 12% 24%;
-        --input: 24 12% 20%;
-        --ring: 145 32% 52%;
-        --chart-1: 145 32% 52%;
-        --chart-2: 28 70% 58%;
-        --chart-3: 12 62% 48%;
-        --chart-4: 196 32% 52%;
-        --chart-5: 330 32% 52%;
-        --sidebar-background: 24 12% 12%;
-        --sidebar-foreground: 36 60% 94%;
-        --sidebar-primary: 145 32% 52%;
-        --sidebar-primary-foreground: 24 12% 8%;
-        --sidebar-accent: 24 10% 20%;
-        --sidebar-accent-foreground: 36 60% 92%;
-        --sidebar-border: 24 12% 24%;
-        --sidebar-ring: 145 32% 52%;
-      }
-    }
-    @apply transition-colors duration-200;
-  }
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
 
-  /* Custom scrollbar styling */
-  ::-webkit-scrollbar {
-    @apply w-2;
-  }
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full hover:bg-border/80;
+}
 
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-border rounded-full hover:bg-border/80;
-  }
-
-  /* Focus ring styling */
-  :focus-visible {
-    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
-  }
+/* Focus ring styling */
+:focus-visible {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
 }

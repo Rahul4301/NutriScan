@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Manrope', 'Inter', 'sans-serif'],
-        headline: ['Playfair Display', 'Manrope', 'serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+        headline: ['Playfair Display', 'Lora', 'serif'],
         code: ['monospace'],
       },
       colors: {
@@ -88,10 +88,36 @@ export default {
             height: '0',
           },
         },
+        'scan-line': {
+          '0%': {
+            top: '0%',
+            opacity: '0',
+          },
+          '10%': {
+            opacity: '0.6',
+          },
+          '90%': {
+            opacity: '0.6',
+          },
+          '100%': {
+            top: '100%',
+            opacity: '0',
+          },
+        },
+        'pulse-scan': {
+          '0%, 100%': {
+            opacity: '0.4',
+          },
+          '50%': {
+            opacity: '0.8',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'scan-line': 'scan-line 3s ease-in-out infinite',
+        'pulse-scan': 'pulse-scan 2s ease-in-out infinite',
       },
     },
   },
