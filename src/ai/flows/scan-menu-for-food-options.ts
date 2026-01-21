@@ -8,11 +8,14 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export type ScanMenuForFoodOptionsInput = {
   menuPhotoDataUri: string;
+  dietaryRestrictions?: string[];
+  allergens?: string[];
 };
 
 export type FoodOption = {
   name: string;
   isVegan: boolean;
+  dietaryViolations?: string[]; // Dietary restrictions this food violates
 };
 
 export type ScanMenuForFoodOptionsOutput = {
@@ -25,6 +28,7 @@ export type ScanMenuForFoodOptionsOutput = {
     carbs: string;
     protein: string;
     fat: string;
+    dietaryViolations?: string[];
   };
 };
 
@@ -48,6 +52,23 @@ export async function scanMenuForFoodOptions(
   }
   const [, mimeType, base64Data] = match;
 
+  const buildDietaryContext = () => {
+    let context = '';
+    if (input.dietaryRestrictions && input.dietaryRestrictions.length > 0) {
+      context += `\n\nIMPORTANT: The user has the following dietary restrictions: ${input.dietaryRestrictions.join(', ')}. `;
+      context += `For each food item, check if it violates any of these restrictions. `;
+      context += `If a food item contains or likely contains ingredients that violate a dietary restriction, add that restriction to the "dietaryViolations" array. `;
+      context += `For example, if the user is vegetarian and a food item contains meat, add "Vegetarian" to dietaryViolations. `;
+      context += `If the user is vegan and a food item contains dairy or eggs, add "Vegan" to dietaryViolations. `;
+      context += `If the user is gluten-free and a food item contains wheat/gluten, add "Gluten-Free" to dietaryViolations.`;
+    }
+    if (input.allergens && input.allergens.length > 0) {
+      context += `\n\nIMPORTANT: The user has the following allergens to avoid: ${input.allergens.join(', ')}. `;
+      context += `If a food item contains or likely contains any of these allergens, add the allergen name to the "dietaryViolations" array.`;
+    }
+    return context;
+  };
+
   const systemPrompt = `You are an AI assistant that extracts food items from a restaurant menu image and determines if they are vegan.
 
 Analyze the provided menu photo and extract the names of the food items and whether they are vegan.
@@ -57,12 +78,12 @@ Analyze the provided menu photo and extract the names of the food items and whet
 - If an item is not explicitly marked as vegan but appears to be vegan by its ingredients (e.g., "garden salad"), you can infer it is vegan.
 - Do not include section headers, descriptions, or prices in the item name.
 - Only return items that are clearly food or drink.
-- If you cannot identify any food items, return an empty list.
+- If you cannot identify any food items, return an empty list.${buildDietaryContext()}
 
 Return JSON only, in this shape:
 {
   "restaurantName": "string | optional",
-  "foodOptions": [{"name": "string", "isVegan": true|false}]
+  "foodOptions": [{"name": "string", "isVegan": true|false, "dietaryViolations": ["string"] | optional}]
 }`;
 
   const result = await model.generateContent({
@@ -161,6 +182,7 @@ Return JSON only, in this shape:
         foodOptions: [{
           name: parsed.name,
           isVegan: parsed.isVegan || false,
+          dietaryViolations: parsed.dietaryViolations || [],
         }],
         directFoodAnalysis: {
           name: parsed.name,
@@ -169,6 +191,7 @@ Return JSON only, in this shape:
           carbs: parsed.carbs || 'N/A',
           protein: parsed.protein || 'N/A',
           fat: parsed.fat || 'N/A',
+          dietaryViolations: parsed.dietaryViolations || [],
         },
       };
     }

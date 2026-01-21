@@ -15,6 +15,7 @@ import {
   X,
   Heart,
 } from 'lucide-react';
+import { ProfileDropdown } from '@/components/profile/profile-dropdown';
 import { scanMenuForFoodOptions } from '@/ai/flows/scan-menu-for-food-options';
 import {
   generateNutritionalData,
@@ -30,11 +31,13 @@ type NutritionStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
 type FoodDetails = GenerateNutritionalDataOutput & {
   name: string;
+  dietaryViolations?: string[]; // Array of dietary restrictions that this food violates
 };
 
 type FoodOption = {
   name: string;
   isVegan: boolean;
+  dietaryViolations?: string[];
 };
 
 const FatIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -91,6 +94,10 @@ export function NutriScanPage() {
   const [nutritionStatus, setNutritionStatus] = useState<NutritionStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    dietary_restrictions?: string[] | null;
+    allergens?: string[] | null;
+  } | null>(null);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -109,6 +116,19 @@ export function NutriScanPage() {
         }, 200);
       } else {
         setUser(user);
+        // Load user profile for dietary restrictions
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('dietary_restrictions, allergens')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile) {
+          setUserProfile({
+            dietary_restrictions: profile.dietary_restrictions,
+            allergens: profile.allergens,
+          });
+        }
       }
     };
     fetchUser();
@@ -144,9 +164,18 @@ export function NutriScanPage() {
     setError(null);
     setFoodOptions([]);
     try {
-      const result = await scanMenuForFoodOptions({ menuPhotoDataUri: dataUri });
+      const result = await scanMenuForFoodOptions({ 
+        menuPhotoDataUri: dataUri,
+        dietaryRestrictions: userProfile?.dietary_restrictions || undefined,
+        allergens: userProfile?.allergens || undefined,
+      });
       if (result.foodOptions && result.foodOptions.length > 0) {
-        setFoodOptions(result.foodOptions);
+        // Ensure dietary violations are set (default to empty array if not present)
+        const updatedOptions = result.foodOptions.map(option => ({
+          ...option,
+          dietaryViolations: option.dietaryViolations || [],
+        }));
+        setFoodOptions(updatedOptions);
         
         // If direct food analysis is available, pre-populate the nutrition data
         if (result.directFoodAnalysis) {
@@ -158,6 +187,7 @@ export function NutriScanPage() {
             carbs: directFood.carbs,
             fat: directFood.fat,
             isVegan: directFood.isVegan,
+            dietaryViolations: directFood.dietaryViolations || [],
           };
           setFoodDetails(prev => new Map(prev).set(directFood.name, details));
         }
@@ -186,7 +216,7 @@ export function NutriScanPage() {
       setError(errorMessage);
       setStatus('error');
     }
-  }, []);
+  }, [userProfile]);
 
   const fetchNutrition = useCallback(async (foodItem: string) => {
     setSelectedFood({ name: foodItem } as FoodDetails);
@@ -202,7 +232,11 @@ export function NutriScanPage() {
     }
     
     try {
-      const nutrition = await generateNutritionalData({ foodItem });
+      const nutrition = await generateNutritionalData({ 
+        foodItem,
+        dietaryRestrictions: userProfile?.dietary_restrictions || undefined,
+        allergens: userProfile?.allergens || undefined,
+      });
       const details = { name: foodItem, ...nutrition };
       setFoodDetails(prev => new Map(prev).set(foodItem, details));
       setSelectedFood(details);
@@ -216,7 +250,7 @@ export function NutriScanPage() {
       }
       setNutritionStatus('error');
     }
-  }, [foodDetails]);
+  }, [foodDetails, userProfile]);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -256,16 +290,19 @@ export function NutriScanPage() {
               Scan warmly. Eat calmly.
             </p>
               </div>
-          <div className="flex-1 flex justify-end pointer-events-auto">
+          <div className="flex-1 flex justify-end gap-2 pointer-events-auto">
               {user && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="h-9 w-9 p-0 rounded-full bg-white/20 backdrop-blur-md border border-[#4A6741]/10 text-[#4A6741] hover:bg-white/30"
-              >
-                <LogOut className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    className="h-9 w-9 p-0 rounded-full bg-white/20 backdrop-blur-md border border-[#4A6741]/10 text-[#4A6741] hover:bg-white/30"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                  <ProfileDropdown user={user} />
+                </>
               )}
           </div>
         </div>
@@ -535,6 +572,13 @@ function FoodCard({
     }
   }, [selected, details, nutritionStatus]);
 
+  // Get dietary violations from either foodItem or details (prefer details if available)
+  const dietaryViolations = details?.dietaryViolations || foodItem.dietaryViolations || [];
+  const hasViolations = dietaryViolations.length > 0;
+  const violationMessage = hasViolations 
+    ? `contains ${dietaryViolations.join(', ')}`
+    : null;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 100, scale: 0.95 }}
@@ -545,7 +589,11 @@ function FoodCard({
         delay: index * 0.08,
         ease: [0.16, 1, 0.3, 1],
       }}
-      className="rounded-3xl bg-[#F5F5F0]/90 backdrop-blur-xl border border-[#4A6741]/20 shadow-2xl overflow-hidden"
+      className={`rounded-3xl backdrop-blur-xl shadow-2xl overflow-hidden ${
+        hasViolations 
+          ? 'bg-red-50/90 border-2 border-red-300/50' 
+          : 'bg-[#F5F5F0]/90 border border-[#4A6741]/20'
+      }`}
     >
       <motion.button
         onClick={() => {
@@ -557,23 +605,38 @@ function FoodCard({
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-2">
-            <h3 className="text-xl font-headline text-[#4A6741] leading-tight">
+            <h3 className={`text-xl font-headline leading-tight ${
+              hasViolations ? 'text-red-700' : 'text-[#4A6741]'
+            }`}>
               {foodItem.name}
             </h3>
-            {foodItem.isVegan && (
+            {foodItem.isVegan && !hasViolations && (
               <div className="flex items-center gap-2">
                 <Leaf className="h-4 w-4 text-[#4A6741]" />
                 <span className="text-xs text-[#4A6741]/70 font-medium">Vegan</span>
-        </div>
-      )}
+              </div>
+            )}
           </div>
-          {nutritionStatus === 'loading' && (
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="w-5 h-5 border-2 border-[#4A6741]/30 border-t-[#4A6741] rounded-full flex-shrink-0 mt-1"
-            />
-          )}
+          <div className="flex flex-col items-end gap-2">
+            {hasViolations && (
+              <div className="text-right">
+                <p className="text-xs font-medium text-red-600 italic">
+                  {violationMessage}
+                </p>
+              </div>
+            )}
+            {nutritionStatus === 'loading' && (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className={`w-5 h-5 border-2 rounded-full flex-shrink-0 mt-1 ${
+                  hasViolations 
+                    ? 'border-red-300 border-t-red-600' 
+                    : 'border-[#4A6741]/30 border-t-[#4A6741]'
+                }`}
+              />
+            )}
+          </div>
       </div>
       </motion.button>
 
@@ -584,7 +647,9 @@ function FoodCard({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden border-t border-[#4A6741]/10"
+            className={`overflow-hidden border-t ${
+              hasViolations ? 'border-red-200/50' : 'border-[#4A6741]/10'
+            }`}
           >
             <div className="p-6 space-y-6">
               {/* Health Rating & Calories */}
