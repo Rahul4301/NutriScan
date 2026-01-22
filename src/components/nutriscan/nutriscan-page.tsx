@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, type ChangeEvent, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { logMeal } from '@/lib/actions/meals';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle,
@@ -14,8 +15,10 @@ import {
   Wheat,
   X,
   Heart,
+  Plus,
 } from 'lucide-react';
 import { ProfileDropdown } from '@/components/profile/profile-dropdown';
+import { MainNav } from '@/components/navigation/main-nav';
 import { scanMenuForFoodOptions } from '@/ai/flows/scan-menu-for-food-options';
 import {
   generateNutritionalData,
@@ -89,6 +92,7 @@ export function NutriScanPage() {
   const [status, setStatus] = useState<Status>('idle');
   const [menuImage, setMenuImage] = useState<string | null>(null);
   const [foodOptions, setFoodOptions] = useState<FoodOption[]>([]);
+  const [restaurantName, setRestaurantName] = useState<string | null>(null);
   const [foodDetails, setFoodDetails] = useState<Map<string, FoodDetails>>(new Map());
   const [selectedFood, setSelectedFood] = useState<FoodDetails | null>(null);
   const [nutritionStatus, setNutritionStatus] = useState<NutritionStatus>('idle');
@@ -176,6 +180,9 @@ export function NutriScanPage() {
           dietaryViolations: option.dietaryViolations || [],
         }));
         setFoodOptions(updatedOptions);
+        if (result.restaurantName) {
+          setRestaurantName(result.restaurantName);
+        }
         
         // If direct food analysis is available, pre-populate the nutrition data
         if (result.directFoodAnalysis) {
@@ -260,6 +267,7 @@ export function NutriScanPage() {
     setStatus('idle');
     setMenuImage(null);
     setFoodOptions([]);
+    setRestaurantName(null);
     setFoodDetails(new Map());
     setSelectedFood(null);
     setNutritionStatus('idle');
@@ -360,13 +368,14 @@ export function NutriScanPage() {
         <AnimatePresence>
           {status === 'scanned' && foodOptions.length > 0 && (
             <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
-              <div className="overflow-y-auto max-h-[70vh] p-4 pb-32 pointer-events-auto">
+              <div className="overflow-y-auto max-h-[70vh] p-4 pb-24 pointer-events-auto">
                 <div className="max-w-md mx-auto space-y-4">
                   {foodOptions.map((item, index) => (
                     <FoodCard
                       key={`${item.name}-${index}`}
                       foodItem={item}
                       index={index}
+                      restaurantName={restaurantName}
                       onSelect={() => fetchNutrition(item.name)}
                       selected={selectedFood?.name === item.name}
                       details={selectedFood?.name === item.name ? selectedFood : null}
@@ -481,6 +490,7 @@ export function NutriScanPage() {
                       )}
                     </div>
       </motion.div>
+      <MainNav />
                 </div>
   );
 }
@@ -552,6 +562,7 @@ function FocusBrackets() {
 function FoodCard({
   foodItem,
   index,
+  restaurantName,
   onSelect,
   selected,
   details,
@@ -559,6 +570,7 @@ function FoodCard({
 }: {
   foodItem: FoodOption;
   index: number;
+  restaurantName?: string | null;
   onSelect: () => void;
   selected: boolean;
   details: FoodDetails | null;
@@ -734,15 +746,129 @@ function FoodCard({
 
               {/* Gentle Insight Footer */}
               <div className="pt-4 border-t border-[#4A6741]/10">
-                <p className="text-sm text-[#4A6741]/80 font-body italic leading-relaxed">
+                <p className="text-sm text-[#4A6741]/80 font-body italic leading-relaxed mb-4">
                   {generateGentleInsight(details)}
                 </p>
+                <LogMealButton foodDetails={details} restaurantName={restaurantName || undefined} />
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
+  );
+}
+
+// Log Meal Button Component
+function LogMealButton({ 
+  foodDetails, 
+  restaurantName 
+}: { 
+  foodDetails: FoodDetails;
+  restaurantName?: string;
+}) {
+  const [logging, setLogging] = useState(false);
+  const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Snack'>('Lunch');
+  const [showDialog, setShowDialog] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const handleLogMeal = async () => {
+    setLogging(true);
+    try {
+      // Parse numeric values from strings
+      const calories = foodDetails.calories ? parseInt(foodDetails.calories.replace(/[^0-9]/g, '')) : null;
+      const protein = foodDetails.protein ? parseFloat(foodDetails.protein.replace(/[^0-9.]/g, '')) : null;
+      const carbs = foodDetails.carbs ? parseFloat(foodDetails.carbs.replace(/[^0-9.]/g, '')) : null;
+      const fat = foodDetails.fat ? parseFloat(foodDetails.fat.replace(/[^0-9.]/g, '')) : null;
+
+      await logMeal({
+        meal_name: mealType,
+        food_name: foodDetails.name,
+        restaurant_name: restaurantName || null,
+        calories,
+        protein_g: protein,
+        carbs_g: carbs,
+        fat_g: fat,
+        is_custom: false,
+      });
+
+      toast({
+        title: 'Meal logged!',
+        description: `${foodDetails.name} has been added to your daily log.`,
+      });
+
+      setShowDialog(false);
+      // Optionally navigate to dashboard
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1000);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to log meal',
+        variant: 'destructive',
+      });
+    } finally {
+      setLogging(false);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        onClick={() => setShowDialog(true)}
+        className="w-full h-12 rounded-[32px] bg-[#4A6741] text-white hover:bg-[#4A6741]/90"
+      >
+        <Plus className="mr-2 h-4 w-4" />
+        Log This Meal
+      </Button>
+
+      {showDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4">
+            <h3 className="text-xl font-headline text-[#4A6741]">Log Meal</h3>
+            <p className="text-sm text-[#4A6741]/70">{foodDetails.name}</p>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[#4A6741]">Meal Type</label>
+              <div className="grid grid-cols-4 gap-2">
+                {(['Breakfast', 'Lunch', 'Dinner', 'Snack'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setMealType(type)}
+                    className={`p-2 rounded-2xl text-sm font-medium transition-all ${
+                      mealType === type
+                        ? 'bg-[#4A6741] text-white'
+                        : 'bg-[#4A6741]/10 text-[#4A6741] hover:bg-[#4A6741]/20'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowDialog(false)}
+                className="flex-1 rounded-[32px] border-[#4A6741]/20 text-[#4A6741]"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleLogMeal}
+                disabled={logging}
+                className="flex-1 rounded-[32px] bg-[#4A6741] text-white hover:bg-[#4A6741]/90"
+              >
+                {logging ? 'Logging...' : 'Log Meal'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
