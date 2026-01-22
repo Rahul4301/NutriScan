@@ -149,14 +149,28 @@ export async function deleteMeal(mealId: string): Promise<void> {
       throw new Error('User not authenticated');
     }
 
-    const { error } = await supabase
-      .from('logged_meals')
-      .delete()
-      .eq('id', mealId)
-      .eq('user_id', user.id);
+    // Try using the database function first (preferred method)
+    const { error: rpcError } = await supabase.rpc('delete_meal_safely', {
+      meal_id_to_delete: mealId,
+    });
 
-    if (error) {
-      throw new Error(`Failed to delete meal: ${error.message}`);
+    if (rpcError) {
+      // Fallback to direct deletion if RPC doesn't exist or fails
+      // The trigger should now handle daily_summaries updates correctly
+      if (rpcError.message.includes('function') && rpcError.message.includes('does not exist')) {
+        console.warn('delete_meal_safely function not found, using direct deletion');
+      }
+      
+      // Direct deletion - trigger will handle daily_summaries update
+      const { error: deleteError } = await supabase
+        .from('logged_meals')
+        .delete()
+        .eq('id', mealId)
+        .eq('user_id', user.id);
+
+      if (deleteError) {
+        throw new Error(`Failed to delete meal: ${deleteError.message}`);
+      }
     }
 
     revalidatePath('/dashboard');

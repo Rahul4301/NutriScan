@@ -7,6 +7,7 @@ import { logMeal } from '@/lib/actions/meals';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle,
+  AlertTriangle,
   Beef,
   Flame,
   Leaf,
@@ -588,7 +589,7 @@ function FoodCard({
   const dietaryViolations = details?.dietaryViolations || foodItem.dietaryViolations || [];
   const hasViolations = dietaryViolations.length > 0;
   const violationMessage = hasViolations 
-    ? `contains ${dietaryViolations.join(', ')}`
+    ? `Contains ${dietaryViolations.join(', ')}`
     : null;
 
   return (
@@ -739,6 +740,23 @@ function FoodCard({
                   <p className="text-sm text-[#4A6741]/70 font-body leading-relaxed">
                     {details.ingredients}
                   </p>
+                </div>
+              )}
+
+              {/* Diabetes Warning */}
+              {details.diabetesWarning && (
+                <div className="pt-2 border-t border-red-200/50">
+                  <div className="rounded-xl bg-red-50/80 p-4 border border-red-200/50">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-red-800 mb-1">Diabetes Alert</p>
+                        <p className="text-sm text-red-700 leading-relaxed">
+                          {details.diabetesWarning}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

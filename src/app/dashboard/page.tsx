@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Target, UtensilsCrossed } from 'lucide-react';
+import { Calendar, Target, UtensilsCrossed, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { MainNav } from '@/components/navigation/main-nav';
 import { DailySummaryCard } from '@/components/dashboard/daily-summary-card';
@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getDailySummary } from '@/lib/actions/summaries';
 import { getUserNutritionalGoals } from '@/lib/actions/nutrition-goals';
 import { getUserStreak } from '@/lib/actions/streaks';
-import { getMealsByDate } from '@/lib/actions/meals';
+import { getMealsByDate, deleteMeal } from '@/lib/actions/meals';
 import type { DailySummary } from '@/lib/actions/summaries';
 import type { NutritionalGoals } from '@/lib/actions/nutrition-goals';
 import type { UserStreak } from '@/lib/actions/streaks';
@@ -102,6 +102,29 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDeleteMeal = async (mealId: string, foodName: string) => {
+    if (!confirm(`Are you sure you want to delete "${foodName}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteMeal(mealId);
+      toast({
+        title: 'Meal deleted',
+        description: `"${foodName}" has been removed from your log.`,
+      });
+      // Reload dashboard data to reflect the deletion
+      await loadDashboardData();
+    } catch (error) {
+      console.error('Failed to delete meal:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete meal',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F5F5F0] flex items-center justify-center">
@@ -171,14 +194,14 @@ export default function DashboardPage() {
                   {todayMeals.map((meal) => (
                     <div
                       key={meal.id}
-                      className="p-4 rounded-2xl bg-white/50 border border-[#4A6741]/10"
+                      className="p-4 rounded-2xl bg-white/50 border border-[#4A6741]/10 hover:bg-white/70 transition-colors"
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
                           <p className="font-medium text-[#4A6741]">{meal.food_name}</p>
                           <p className="text-sm text-[#4A6741]/60">{meal.meal_name}</p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex-1">
                           <p className="font-semibold text-[#4A6741]">
                             {meal.calories || 0} kcal
                           </p>
@@ -186,6 +209,15 @@ export default function DashboardPage() {
                             {meal.protein_g?.toFixed(0)}g P • {meal.carbs_g?.toFixed(0)}g C • {meal.fat_g?.toFixed(0)}g F
                           </p>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => meal.id && handleDeleteMeal(meal.id, meal.food_name)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0 flex-shrink-0"
+                          title="Delete meal"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))}
