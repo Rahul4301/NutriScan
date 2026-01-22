@@ -368,7 +368,7 @@ export function NutriScanPage() {
         <AnimatePresence>
           {status === 'scanned' && foodOptions.length > 0 && (
             <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
-              <div className="overflow-y-auto max-h-[70vh] p-4 pb-24 pointer-events-auto">
+              <div className="overflow-y-auto max-h-[60vh] p-4 pb-32 pointer-events-auto">
                 <div className="max-w-md mx-auto space-y-4">
                   {foodOptions.map((item, index) => (
                     <FoodCard
@@ -438,14 +438,14 @@ export function NutriScanPage() {
         </AnimatePresence>
       </div>
 
-      {/* Bottom Control Bar - Fixed */}
+      {/* Bottom Control Bar - Fixed (above nav bar) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute bottom-0 left-0 right-0 z-50 pb-6 pt-4 px-4 bg-gradient-to-t from-[#F5F5F0] via-[#F5F5F0]/95 to-transparent"
+        className="fixed bottom-16 left-0 right-0 z-50 pb-3 pt-1 px-4 bg-gradient-to-t from-[#F5F5F0] via-[#F5F5F0]/85 to-transparent pointer-events-none"
       >
-        <div className="max-w-md mx-auto w-full space-y-3">
+        <div className="max-w-md mx-auto w-full space-y-3 pointer-events-auto">
           {status === 'idle' ? (
             <>
                 <input
@@ -659,11 +659,9 @@ function FoodCard({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className={`overflow-hidden border-t ${
-              hasViolations ? 'border-red-200/50' : 'border-[#4A6741]/10'
-            }`}
+            className="overflow-hidden"
           >
-            <div className="p-6 space-y-6">
+            <div className="px-6 pb-6 space-y-6">
               {/* Health Rating & Calories */}
               {(details.healthRating !== undefined || details.calories) && (
                 <div className="grid grid-cols-2 gap-4">
