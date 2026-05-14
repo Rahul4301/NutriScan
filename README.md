@@ -5,17 +5,17 @@
 </p>
 
 <p align="center">
-  <strong>Scan any menu, get instant nutritional insights, and make smarter food choices.</strong>
+  <strong>Scan meals, menus, and packaged foods for instant nutrition snapshots.</strong>
 </p>
 
 ---
 
 ## ✨ Features
 
--   **📸 AI Menu Scanning**: Snap a photo of any menu, and NutriScan will instantly identify the food items.
--   **🥗 Instant Nutritional Analysis**: Get detailed nutritional information for each food item, including calories, protein, carbs, and fat.
+-   **📸 AI Food Scanning**: Snap a photo of a meal, menu, snack, or packaged food, and NutriScan will identify the food items.
+-   **🥗 Instant Macro Snapshot**: Get average calories, protein, carbs, and fat in the first scan result.
 -   **🌿 Vegan & Health Ratings**: Quickly identify vegan-friendly options with a leaf icon and see a health rating (from 1 to 10) for each item.
--   **😂 Fun Loading Experience**: Enjoy a variety of playful and quirky loading messages while the AI analyzes your menu.
+-   **😂 Fun Loading Experience**: Enjoy a variety of playful and quirky loading messages while the AI analyzes your food.
 -   **🔐 Secure Authentication**: User accounts are protected with a secure authentication flow powered by Supabase.
 -   **📱 Responsive Design**: A beautiful and intuitive UI that works seamlessly on any device, built with Next.js, TypeScript, and Tailwind CSS.
 
@@ -92,11 +92,11 @@
 
 ## 🤖 AI Flows
 
-NutriScan uses two primary AI flows, powered by Google's Genkit:
+NutriScan uses a lean scan-first AI workflow:
 
-1.  **`scan-menu-for-food-options`**: This flow takes a menu image as input and returns a list of all the food items it can identify.
+1.  **`scan-menu-for-food-options`**: This flow takes a food image as input and returns detected foods plus average calories, carbs, protein, fat, allergens, and health rating data.
 
-2.  **`generate-nutritional-data`**: This flow takes a food item's name and returns a detailed nutritional analysis, including a health rating and whether the item is vegan.
+2.  **`generate-nutritional-data`**: This fallback flow can still fill in details if a scanned item is missing macro data.
 
 The prompts for these flows have been carefully refined to be concise and to minimize the chances of inaccurate or "hallucinated" information.
 

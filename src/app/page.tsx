@@ -115,14 +115,14 @@ export default function LandingPage() {
               >
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#4A6741]/10 border border-[#4A6741]/20 backdrop-blur-sm">
                   <Sparkles className="h-4 w-4 text-[#4A6741]" />
-                  <span className="text-sm font-medium text-[#4A6741]">AI-Powered Nutrition Intelligence</span>
+                  <span className="text-sm font-medium text-[#4A6741]">Instant Food Scan Insights</span>
                 </div>
 
                 <div className="space-y-6">
                   <h1 className="text-5xl lg:text-6xl xl:text-7xl font-headline text-[#4A6741] leading-[1.1] tracking-tight">
-                    Scan. Analyze.{' '}
+                    Scan food.{' '}
                     <span className="relative inline-block">
-                      <span className="relative z-10">Eat</span>
+                      <span className="relative z-10">Know</span>
                       <motion.span
                         className="absolute bottom-2 left-0 right-0 h-4 bg-[#C27D5F]/20 -z-0"
                         initial={{ scaleX: 0 }}
@@ -130,11 +130,11 @@ export default function LandingPage() {
                         transition={{ duration: 0.8, delay: 0.5 }}
                       />
                     </span>{' '}
-                    wisely.
+                    fast.
                   </h1>
                   <p className="text-xl lg:text-2xl text-[#4A6741]/70 leading-relaxed font-body max-w-2xl">
-                    Transform any menu into clear, actionable nutrition insights. 
-                    <span className="block mt-2">No judgment, just clarity.</span>
+                    Point your camera at a meal, menu, or packaged food and get a quick macro snapshot, allergen flags, and a simple health read.
+                    <span className="block mt-2">Fast clarity before you take a bite.</span>
                   </p>
                 </div>
 
@@ -175,7 +175,7 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-[#4A6741]" />
-                    <span className="text-sm text-[#4A6741]/70 font-medium">AI-powered insights</span>
+                    <span className="text-sm text-[#4A6741]/70 font-medium">Food scan ratings</span>
                   </div>
                 </div>
               </motion.div>
@@ -191,13 +191,13 @@ export default function LandingPage() {
                   {/* Main Card */}
                   <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-white/80 to-[#F5F5F0]/80 backdrop-blur-xl border border-[#4A6741]/10">
                     <div className="aspect-[4/5] p-8 flex flex-col">
-                      {/* Mock Menu Header */}
+                      {/* Mock Food Scan Header */}
                       <div className="mb-6">
                         <div className="h-3 w-24 bg-[#4A6741]/20 rounded-full mb-3"></div>
                         <div className="h-2 w-32 bg-[#4A6741]/10 rounded-full"></div>
                       </div>
 
-                      {/* Menu Items with Nutritional Info */}
+                      {/* Food Items with Nutritional Info */}
                       <div className="space-y-4 flex-1">
                         {[
                           { name: 'Caesar Salad', calories: '320', color: 'bg-[#4A6741]/10' },
@@ -297,7 +297,7 @@ export default function LandingPage() {
                   Everything you need, thoughtfully designed
                 </h2>
                 <p className="text-xl lg:text-2xl text-[#4A6741]/70 leading-relaxed font-body">
-                  Powerful features wrapped in a warm, approachable experience. 
+                  Powerful features wrapped in a warm, approachable experience.
                   No overwhelm, just clarity.
                 </p>
               </div>
@@ -307,38 +307,38 @@ export default function LandingPage() {
               {[
                 {
                   icon: <Camera className="h-8 w-8" />,
-                  title: 'Instant Menu Scan',
-                  description: 'Capture any menu with your camera. Our AI reads, understands, and extracts every dish with precision—no manual entry required.',
+                  title: 'Instant Food Scan',
+                  description: 'Capture a meal, menu, snack, or packaged product. NutriScan identifies what it sees and returns a clean nutrition snapshot.',
                   gradient: 'from-[#4A6741]/10 to-[#4A6741]/5',
                 },
                 {
                   icon: <Flame className="h-8 w-8" />,
-                  title: 'Complete Nutrition',
-                  description: 'Get detailed breakdowns of calories, macros, allergens, and ingredients. All the information you need, beautifully presented.',
+                  title: 'Macro Snapshot',
+                  description: 'See estimated calories, carbs, protein, fat, allergens, and likely ingredients without digging through nutrition tables.',
                   gradient: 'from-[#C27D5F]/10 to-[#C27D5F]/5',
                 },
                 {
                   icon: <Shield className="h-8 w-8" />,
                   title: 'Dietary Alerts',
-                  description: 'Set your preferences and restrictions. We\'ll flag items that don\'t align with your dietary needs—because your health matters.',
+                  description: 'Set your preferences and restrictions. We flag foods that may not line up with your needs before they hit your plate.',
                   gradient: 'from-[#4A6741]/10 to-[#4A6741]/5',
                 },
                 {
                   icon: <BrainCircuit className="h-8 w-8" />,
-                  title: 'AI-Powered Insights',
-                  description: 'Receive gentle, helpful suggestions based on your preferences. Think of it as a knowledgeable friend, not a nutrition textbook.',
+                  title: 'Quick Food Verdicts',
+                  description: 'Get a simple health rating and plain-language nutrition context for everyday choices.',
                   gradient: 'from-[#C27D5F]/10 to-[#C27D5F]/5',
                 },
                 {
                   icon: <Heart className="h-8 w-8" />,
                   title: 'Health Ratings',
-                  description: 'Every dish gets a thoughtful health score. Understand nutrition at a glance without feeling judged or overwhelmed.',
+                  description: 'Every scanned food gets an easy score so you can compare options at a glance.',
                   gradient: 'from-[#4A6741]/10 to-[#4A6741]/5',
                 },
                 {
                   icon: <Leaf className="h-8 w-8" />,
                   title: 'Vegan & Allergen Info',
-                  description: 'Instantly see which items are vegan, vegetarian, or contain allergens. Make informed choices without the detective work.',
+                  description: 'Instantly see which foods may be vegan, vegetarian, or contain allergens. Make informed choices without the detective work.',
                   gradient: 'from-[#C27D5F]/10 to-[#C27D5F]/5',
                 },
               ].map((feature, idx) => (
@@ -369,19 +369,19 @@ export default function LandingPage() {
                 {
                   step: '01',
                   title: 'Snap a Photo',
-                  description: 'Take a picture of any restaurant menu with your phone camera. Our AI does the rest.',
+                  description: 'Take a picture of a meal, packaged food, or restaurant menu. NutriScan does the rest.',
                   icon: <Camera className="h-12 w-12" />,
                 },
                 {
                   step: '02',
                   title: 'Review & Select',
-                  description: 'Browse through detected menu items. Tap any dish to see its complete nutritional profile.',
+                  description: 'Browse detected foods and see calories, macros, allergens, and health rating right away.',
                   icon: <ScanLine className="h-12 w-12" />,
                 },
                 {
                   step: '03',
                   title: 'Make Informed Choices',
-                  description: 'Get instant insights on calories, macros, allergens, and health ratings. Order with confidence.',
+                  description: 'Use the score and macro snapshot to choose with confidence.',
                   icon: <CheckCircle2 className="h-12 w-12" />,
                 },
               ].map((step, idx) => (

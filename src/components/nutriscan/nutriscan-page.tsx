@@ -41,6 +41,13 @@ type FoodDetails = GenerateNutritionalDataOutput & {
 type FoodOption = {
   name: string;
   isVegan: boolean;
+  healthRating?: number;
+  calories?: string;
+  carbs?: string;
+  protein?: string;
+  fat?: string;
+  ingredients?: string;
+  potentialAllergens?: string[];
   dietaryViolations?: string[];
 };
 
@@ -68,6 +75,46 @@ const loadingMessages = [
   'Scanning for sneaky sugars...',
   'Decoding deliciousness levels...',
 ];
+
+const MAX_SCAN_IMAGE_DIMENSION = 1600;
+const SCAN_IMAGE_QUALITY = 0.82;
+
+const prepareImageForScan = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const image = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const scale = Math.min(
+        1,
+        MAX_SCAN_IMAGE_DIMENSION / Math.max(image.width, image.height)
+      );
+      const width = Math.max(1, Math.round(image.width * scale));
+      const height = Math.max(1, Math.round(image.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        reject(new Error('Could not prepare image for scanning.'));
+        return;
+      }
+
+      context.drawImage(image, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', SCAN_IMAGE_QUALITY));
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Could not read the selected image.'));
+    };
+
+    image.src = objectUrl;
+  });
+};
 
 // Generate gentle insights based on nutrition data
 const generateGentleInsight = (data: GenerateNutritionalDataOutput): string => {
@@ -127,7 +174,7 @@ export function NutriScanPage() {
           .select('dietary_restrictions, allergens')
           .eq('user_id', user.id)
           .single();
-        
+
         if (profile) {
           setUserProfile({
             dietary_restrictions: profile.dietary_restrictions,
@@ -151,16 +198,18 @@ export function NutriScanPage() {
     return () => clearInterval(interval);
   }, [status]);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const dataUri = reader.result as string;
+      try {
+        const dataUri = await prepareImageForScan(file);
         setMenuImage(dataUri);
         performScan(dataUri);
-      };
-      reader.readAsDataURL(file);
+      } catch (e) {
+        console.error('Image preparation error:', e);
+        setError('Could not prepare this image. Please try another photo.');
+        setStatus('error');
+      }
     }
   };
 
@@ -169,7 +218,7 @@ export function NutriScanPage() {
     setError(null);
     setFoodOptions([]);
     try {
-      const result = await scanMenuForFoodOptions({ 
+      const result = await scanMenuForFoodOptions({
         menuPhotoDataUri: dataUri,
         dietaryRestrictions: userProfile?.dietary_restrictions || undefined,
         allergens: userProfile?.allergens || undefined,
@@ -184,8 +233,31 @@ export function NutriScanPage() {
         if (result.restaurantName) {
           setRestaurantName(result.restaurantName);
         }
-        
-        // If direct food analysis is available, pre-populate the nutrition data
+
+        setFoodDetails(prev => {
+          const next = new Map(prev);
+
+          for (const option of updatedOptions) {
+            if (option.calories || option.carbs || option.protein || option.fat) {
+              next.set(option.name, {
+                name: option.name,
+                calories: option.calories || 'N/A',
+                carbs: option.carbs || 'N/A',
+                protein: option.protein || 'N/A',
+                fat: option.fat || 'N/A',
+                ingredients: option.ingredients,
+                allergens: option.potentialAllergens,
+                isVegan: option.isVegan,
+                healthRating: option.healthRating,
+                dietaryViolations: option.dietaryViolations || [],
+              });
+            }
+          }
+
+          return next;
+        });
+
+        // If direct food analysis is available, keep it as the selected item cache.
         if (result.directFoodAnalysis) {
           const directFood = result.directFoodAnalysis;
           const details: FoodDetails = {
@@ -199,16 +271,16 @@ export function NutriScanPage() {
           };
           setFoodDetails(prev => new Map(prev).set(directFood.name, details));
         }
-        
+
         setStatus('scanned');
       } else {
-        setError('No food items were detected in this image. Please try a clearer menu photo.');
+        setError('No food items were detected in this image. Please try a clearer food photo.');
         setStatus('error');
       }
     } catch (e) {
       console.error('Scan error:', e);
-      let errorMessage = 'Failed to scan menu. Please try another image.';
-      
+      let errorMessage = 'Failed to scan food. Please try another image.';
+
       if (e instanceof Error) {
         if (e.message.includes('[429 Too Many Requests]')) {
           errorMessage = 'Too many API requests made. Please try again later.';
@@ -217,10 +289,10 @@ export function NutriScanPage() {
         } else if (e.message.includes('Invalid menuPhotoDataUri')) {
           errorMessage = 'Invalid image format. Please try uploading the image again.';
         } else {
-          errorMessage = `Failed to scan menu: ${e.message}. Please try another image.`;
+          errorMessage = `Failed to scan food: ${e.message}. Please try another image.`;
         }
       }
-      
+
       setError(errorMessage);
       setStatus('error');
     }
@@ -238,9 +310,9 @@ export function NutriScanPage() {
       setNutritionStatus('loaded');
       return;
     }
-    
+
     try {
-      const nutrition = await generateNutritionalData({ 
+      const nutrition = await generateNutritionalData({
         foodItem,
         dietaryRestrictions: userProfile?.dietary_restrictions || undefined,
         allergens: userProfile?.allergens || undefined,
@@ -324,7 +396,7 @@ export function NutriScanPage() {
           <div className="absolute inset-0">
             <Image
               src={menuImage}
-              alt="Menu"
+              alt="Food scan"
               fill
               className="object-cover"
               priority
@@ -466,12 +538,12 @@ export function NutriScanPage() {
                   className="w-full h-14 rounded-[32px] bg-[#4A6741] text-white text-base font-semibold shadow-lg hover:bg-[#4A6741]/90 transition-all"
                 >
                   <UploadCloud className="mr-2 h-5 w-5" />
-                  Upload menu photo
+                  Upload food photo
                 </Button>
               </motion.div>
               <p className="text-center text-xs text-[#4A6741]/70 font-body">
-                  Prefer a demo? Use any menu photo from your camera roll.
-                </p>
+                Try a meal, menu, snack, or packaged food from your camera roll.
+              </p>
             </>
           ) : (
             <motion.div
@@ -588,7 +660,7 @@ function FoodCard({
   // Get dietary violations from either foodItem or details (prefer details if available)
   const dietaryViolations = details?.dietaryViolations || foodItem.dietaryViolations || [];
   const hasViolations = dietaryViolations.length > 0;
-  const violationMessage = hasViolations 
+  const violationMessage = hasViolations
     ? `Contains ${dietaryViolations.join(', ')}`
     : null;
 
@@ -603,8 +675,8 @@ function FoodCard({
         ease: [0.16, 1, 0.3, 1],
       }}
       className={`rounded-3xl backdrop-blur-xl shadow-2xl overflow-hidden ${
-        hasViolations 
-          ? 'bg-red-50/90 border-2 border-red-300/50' 
+        hasViolations
+          ? 'bg-red-50/90 border-2 border-red-300/50'
           : 'bg-[#F5F5F0]/90 border border-[#4A6741]/20'
       }`}
     >
@@ -643,8 +715,8 @@ function FoodCard({
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 className={`w-5 h-5 border-2 rounded-full flex-shrink-0 mt-1 ${
-                  hasViolations 
-                    ? 'border-red-300 border-t-red-600' 
+                  hasViolations
+                    ? 'border-red-300 border-t-red-600'
                     : 'border-[#4A6741]/30 border-t-[#4A6741]'
                 }`}
               />
@@ -776,10 +848,10 @@ function FoodCard({
 }
 
 // Log Meal Button Component
-function LogMealButton({ 
-  foodDetails, 
-  restaurantName 
-}: { 
+function LogMealButton({
+  foodDetails,
+  restaurantName
+}: {
   foodDetails: FoodDetails;
   restaurantName?: string;
 }) {
@@ -845,7 +917,7 @@ function LogMealButton({
           <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4">
             <h3 className="text-xl font-headline text-[#4A6741]">Log Meal</h3>
             <p className="text-sm text-[#4A6741]/70">{foodDetails.name}</p>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#4A6741]">Meal Type</label>
               <div className="grid grid-cols-4 gap-2">
